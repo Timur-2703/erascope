@@ -101,7 +101,7 @@ button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:va
 .chip{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:4px;padding:3px 8px;white-space:nowrap;font-variant-numeric:tabular-nums}
 .chip.a{border-color:var(--amber);color:var(--amber)} .chip.g{border-color:rgba(76,195,138,.5);color:var(--good)} .chip.w{border-color:rgba(227,179,65,.5);color:var(--warn)} .chip.r{border-color:rgba(240,82,82,.5);color:var(--bad)}
 .steps{display:flex;gap:3px}
-.steps i{flex:1;min-width:14px;height:4px;background:var(--line);border-radius:2px}
+.steps i{flex:1;min-width:6px;height:4px;background:var(--line);border-radius:2px}
 .steps i.d{background:var(--fg)} .steps i.n{background:var(--amber)}
 .story{font-size:15px;line-height:1.65;max-width:64ch;color:#D6D1C6}
 .story b{color:var(--fg)}
@@ -140,6 +140,7 @@ input[type=range]{width:100%;accent-color:var(--amber);height:28px}
 .pin{position:absolute;top:8px;transform:translateX(-50%);width:13px;height:13px;border-radius:50%;border:2px solid var(--panel);box-sizing:content-box}
 .pin.you{background:var(--you)} .pin.real{background:var(--amber)}
 .verdict{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.verdict .chip{white-space:normal;max-width:100%;line-height:1.45}
 .pts{font-family:var(--display);font-weight:700;font-size:34px;font-variant-numeric:tabular-nums}
 .fact{border-left:2px solid var(--amber);padding-left:12px;font-size:14px;color:#D6D1C6;max-width:65ch}
 
@@ -782,7 +783,7 @@ function makeMap(box,{onPick}={}){
     countryAt(ll){const f=FEATS.find(f=>d3.geoContains(f,ll));return f?{id:f.id,name:f.properties.name}:null}}
 }
 const mapBox=(id,hint)=>`<div class="mapbox" id="${id}"><div class="ov br"><button class="mz" data-f="1.8" aria-label="${L("Приблизить карту","Zoom map in")}">+</button><button class="mz" data-f="0.55" aria-label="${L("Отдалить карту","Zoom map out")}">−</button></div><span class="maphint" id="${id}h">${hint}</span></div>`;
-const TOUCH=()=>matchMedia("(pointer:coarse)").matches&&innerWidth<900;
+const TOUCH=()=>(matchMedia("(pointer:coarse)").matches||navigator.maxTouchPoints>0)&&innerWidth<900;
 function bindZoom(box,map){box.querySelectorAll(".mz").forEach(b=>b.onclick=e=>{e.stopPropagation();map?.zoomBy(+b.dataset.f)});
   if(!map||!TOUCH())return;
   /* на телефоне маленькая карта — только превью: тап открывает её на весь экран, а страница свободно листается */
