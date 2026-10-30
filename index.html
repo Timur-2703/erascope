@@ -196,6 +196,17 @@ input[type=range]{width:100%;accent-color:var(--amber);height:28px}
 .mapbox{position:relative;border-radius:6px;overflow:hidden;background:var(--ocean);border:1px solid var(--line);touch-action:none}
 .mapbox svg{display:block;width:100%;height:auto;cursor:crosshair}
 .mapbox .ov.br{right:8px;top:8px;bottom:auto}
+.mapcover{position:absolute;inset:0;z-index:2;background:transparent;border:0;padding:0;margin:0;width:100%;height:100%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mapcover span{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;background:var(--amber);color:#111;padding:9px 14px;border-radius:6px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.mapbox.inl{touch-action:auto}.mapbox.inl .ov.br{display:none}
+.mapfs{position:fixed;inset:0;z-index:1000;background:var(--ocean);display:flex;flex-direction:column}
+.mapfs .mapbox{flex:1;border:0;border-radius:0;touch-action:none}
+.mapfs .mapbox svg{height:100%;width:100%}
+.mapfs .mapbox .ov.br{top:auto;bottom:90px;right:12px}
+.mapfs .mapbox .ov.br button{width:48px;height:48px;font-size:24px}
+.mapfs .maphint{left:12px;top:12px;bottom:auto;font-size:12px;padding:6px 10px}
+.mapfs .fsbar{display:flex;gap:10px;padding:12px 12px calc(12px + env(safe-area-inset-bottom));background:rgba(12,14,17,.96);border-top:1px solid var(--line)}
+.mapfs .fsbar button{flex:1;min-height:52px;font-size:15px}
 .maphint{position:absolute;left:8px;bottom:8px;font-family:var(--mono);font-size:11px;color:var(--muted);background:rgba(12,14,17,.85);padding:3px 8px;border-radius:4px;pointer-events:none}
 .city-label{font-family:var(--mono);fill:#B9B4A8;paint-order:stroke;stroke:#0C0E11;stroke-width:3px;pointer-events:none}
 .yearbig{font-family:var(--display);font-weight:700;font-size:clamp(48px,7vw,72px);line-height:.9;font-variant-numeric:tabular-nums;text-align:center}
@@ -328,7 +339,7 @@ ul.ticks li::before{content:"";position:absolute;left:3px;top:7px;width:9px;heig
 let LANG=(()=>{try{const s=localStorage.getItem("pk_lang");if(s==="ru"||s==="en")return s}catch(e){}return (window.PRIKIDKA_CONFIG||{}).DEFAULT_LANG||"en"})();
 const L=(ru,en)=>LANG==="en"?en:ru;
 const tr=x=>x&&typeof x==="object"&&("ru" in x||"en" in x)?(x[LANG]??x.ru):x;
-function setLang(l){LANG=l;try{localStorage.setItem("pk_lang",l)}catch(e){}document.documentElement.lang=l;
+function setLang(l){if(document.querySelector(".mapfs")&&MAPFS_CLOSE)MAPFS_CLOSE();LANG=l;try{localStorage.setItem("pk_lang",l)}catch(e){}document.documentElement.lang=l;
   const y=window.scrollY,sh=LASTSHOT,g=ALL_GAMES.find(x=>x.id===VIEW);
   if(g&&sh&&sh.view===VIEW&&sh.g===g.run){renderNav();CURV?.clear();CURV=null;for(const k in sh.st)sh.g[k]=snap(sh.st[k]);
     REPLAY=true;try{sh.g[sh.k].apply(sh.g,sh.args)}finally{REPLAY=false}window.scrollTo(0,y);return}
@@ -741,10 +752,14 @@ function makeMap(box,{onPick}={}){
     marks.selectAll("[data-r]").attr("r",function(){return this.dataset.r/k}).attr("stroke-width",2/k);marks.selectAll("path").attr("stroke-width",2/k)}
   const zoom=d3.zoom().scaleExtent([1,60]).translateExtent([[0,0],[Wd,H]]).on("zoom",e=>{k=e.transform.k;g.attr("transform",e.transform);upd()});
   svg.call(zoom).on("dblclick.zoom",null);upd();let locked=false;
-  svg.on("click",e=>{if(locked||!onPick)return;const [x,y]=d3.pointer(e,g.node());const ll=proj.invert([x,y]);if(!ll||isNaN(ll[0]))return;pin(ll,"you");onPick(ll)});
+  svg.on("click",e=>{if(locked||!onPick)return;const [x,y]=d3.pointer(e,g.node());const ll=proj.invert([x,y]);if(!ll||isNaN(ll[0]))return;pin(ll,"you");last=ll;onPick(ll)});
   function pin(ll,who){if(who==="you")marks.selectAll(".you").remove();const [x,y]=proj(ll);
-    marks.append("circle").attr("class",who).attr("cx",x).attr("cy",y).attr("data-r",who==="you"?6:7).attr("fill",who==="you"?"var(--you)":"var(--target)").attr("stroke","#0C0E11");upd()}
+    marks.append("circle").attr("class",who).attr("cx",x).attr("cy",y).attr("data-r",(who==="you"?6:7)*(TOUCH()?1.6:1)).attr("fill",who==="you"?"var(--you)":"var(--target)").attr("stroke","#0C0E11");upd()}
+  let last=null;
   return{zoomBy(f){svg.transition().duration(250).call(zoom.scaleBy,f)},pin,
+    hasPin(){return !!last},fit(full){const r=box.getBoundingClientRect();if(!full){if(!locked)svg.call(zoom.transform,last?d3.zoomIdentity.translate(Wd/2-proj(last)[0]*2,H/2-proj(last)[1]*2).scale(2):d3.zoomIdentity);return}
+      const kk=Math.max(1,Math.min(3,(r.height/r.width)/(H/Wd)*0.75));const c=last?proj(last):[Wd*0.55,H*0.4];
+      svg.call(zoom.transform,d3.zoomIdentity.translate(Wd/2-c[0]*kk,H/2-c[1]*kk).scale(kk))},
     answer(guess,target,cid){locked=true;if(cid)countries.filter(f=>f.id===cid).attr("fill","var(--hit)");
       marks.insert("path",":first-child").datum({type:"LineString",coordinates:[guess,target]}).attr("d",path).attr("fill","none").attr("stroke","var(--amber)").attr("stroke-dasharray","5 4");
       pin(target,"target");marks.selectAll("circle").raise();
@@ -753,7 +768,20 @@ function makeMap(box,{onPick}={}){
     countryAt(ll){const f=FEATS.find(f=>d3.geoContains(f,ll));return f?{id:f.id,name:f.properties.name}:null}}
 }
 const mapBox=(id,hint)=>`<div class="mapbox" id="${id}"><div class="ov br"><button class="mz" data-f="1.8" aria-label="${L("Приблизить карту","Zoom map in")}">+</button><button class="mz" data-f="0.55" aria-label="${L("Отдалить карту","Zoom map out")}">−</button></div><span class="maphint" id="${id}h">${hint}</span></div>`;
-function bindZoom(box,map){box.querySelectorAll(".mz").forEach(b=>b.onclick=e=>{e.stopPropagation();map?.zoomBy(+b.dataset.f)})}
+const TOUCH=()=>matchMedia("(pointer:coarse)").matches&&innerWidth<900;
+function bindZoom(box,map){box.querySelectorAll(".mz").forEach(b=>b.onclick=e=>{e.stopPropagation();map?.zoomBy(+b.dataset.f)});
+  if(!map||!TOUCH())return;
+  /* на телефоне маленькая карта — только превью: тап открывает её на весь экран, а страница свободно листается */
+  box.classList.add("inl");const cover=document.createElement("button");cover.className="mapcover";cover.type="button";
+  cover.innerHTML=`<span>${L("Открыть карту","Open the map")}</span>`;box.appendChild(cover);
+  const home=document.createElement("div");
+  cover.onclick=e=>{e.stopPropagation();box.parentNode.insertBefore(home,box);const fs=document.createElement("div");fs.className="mapfs";
+    fs.innerHTML=`<div class="fsbar"><button class="go" id="fsDone">${L("Готово","Done")}</button></div>`;fs.insertBefore(box,fs.firstChild);document.body.appendChild(fs);
+    box.classList.remove("inl");cover.style.display="none";const hint=box.querySelector(".maphint");if(hint&&!map.hasPin())hint.textContent=L("Щипок — приблизить, тап — поставить метку","Pinch to zoom, tap to drop a pin");document.documentElement.style.overflow="hidden";map.fit(true);
+    const close=()=>{const sp=cover.querySelector("span");if(map.hasPin())sp.textContent=L("Переставить метку","Move the pin");home.parentNode.insertBefore(box,home);home.remove();fs.remove();box.classList.add("inl");cover.style.display="";document.documentElement.style.overflow="";map.fit(false)};
+    fs.querySelector("#fsDone").onclick=close;MAPFS_CLOSE=close};
+}
+let MAPFS_CLOSE=null;
 
 /* ================= Игра: Где и когда ================= */
 const YEAR_MIN=1900,YEAR_MAX=new Date().getFullYear();
@@ -787,7 +815,7 @@ const WhereGame={
        ${r.price?`<div class="field"><div class="label">${L("Сколько стоит","How much is")}: ${esc(r.priceItem||L("товар в кадре","the item in shot"))}</div><div class="pricerow"><input id="pr" inputmode="decimal" placeholder="0" aria-label="${L("Цена","Price")}"><span class="mono muted">${curSign(r.cur)}</span></div></div>`:""}
        <button class="go" id="send" disabled>${L("Поставьте метку на карте","Drop a pin on the map")}</button></div></section></div>`;
    const v=newViewer($("#frame"));r.kind==="pano"?v.pano(roundSrc(r)):v.photo(roundSrc(r));$("#zi").onclick=()=>v.zoomIn();$("#zo").onclick=()=>v.zoomOut();
-   const box=$("#wmap");const map=makeMap(box,{onPick:ll=>{this.guess=ll;this.check();$("#wmaph").textContent=L("Метка стоит. Можно переставить","Pin placed. Click again to move it")}});this.map=map;bindZoom(box,map);
+   const box=$("#wmap");const map=makeMap(box,{onPick:ll=>{this.guess=ll;this.check();$("#wmaph").textContent=L("Метка стоит. Можно переставить",TOUCH()?"Pin placed. Tap again to move it":"Pin placed. Click again to move it")}});this.map=map;bindZoom(box,map);
    const yr=$("#yr"),yb=$("#yb");const setY=y=>{this.year=Math.max(YEAR_MIN,Math.min(YEAR_MAX,y));yr.value=this.year;yb.textContent=this.year};
    yr.oninput=()=>setY(+yr.value);document.querySelectorAll(".row4 button").forEach(b=>b.onclick=()=>setY(this.year+ +b.dataset.d));
    if(r.price){const pr=$("#pr");pr.oninput=()=>{this.priceG=parseNum(pr.value);this.check()}}
@@ -978,7 +1006,7 @@ const AgentGame={rounds:5,attempts:3,
     <div class="card" id="aside"><div class="hud" id="att"></div><div class="clues" id="clues"></div><div id="log"></div>
     <div class="btns"><button id="buy"></button><button id="stop" hidden>${L("Сдать отчёт","Submit report")}</button><button class="go" id="send" disabled>${L("Агент здесь","He's here")}</button></div></div></section></div>`;
    const v=newViewer($("#frame"));c.kind==="pano"?v.pano(photo(c.shot)):v.photo(photo(c.shot));$("#zi").onclick=()=>v.zoomIn();$("#zo").onclick=()=>v.zoomOut();
-   const box=$("#amap");this.map=makeMap(box,{onPick:ll=>{this.guess=ll;$("#send").disabled=this.m.done;$("#amaph").textContent=L("Метка стоит. Можно переставить","Pin placed. Click again to move it")}});bindZoom(box,this.map);this.guess=null;
+   const box=$("#amap");this.map=makeMap(box,{onPick:ll=>{this.guess=ll;$("#send").disabled=this.m.done;$("#amaph").textContent=L("Метка стоит. Можно переставить",TOUCH()?"Pin placed. Tap again to move it":"Pin placed. Click again to move it")}});bindZoom(box,this.map);this.guess=null;
    $("#buy").onclick=()=>{if(this.m.opened<c.clues.length&&!this.m.done){this.m.opened++;this.m.pts-=500;this.draw()}};$("#send").onclick=()=>this.attempt();$("#stop").onclick=()=>{if(!this.m.done&&this.m.country)this.complete(this.m.bestD,false)};this.draw()},
  draw(){const c=this.s.q[this.s.i],m=this.m;
    $("#att").innerHTML=`<span class="chip">${L("Попыток","Tries left")}: ${m.left}</span><span class="chip ${m.country?"g":""}">${L("Страна","Country")}: ${m.country?tr(c.country):"?"}</span>`;
@@ -1261,7 +1289,7 @@ function renderNav(){const h=VIEW;const BR=L(CFG.BRAND_RU||"Прикидка",CF
   $("#langBtn").onclick=()=>setLang(LANG==="en"?"ru":"en")}
 function nav(id){try{history.replaceState(null,"",id?"#"+id:location.pathname+location.search)}catch(e){}route(id)}
 document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest('a[href^="#"]:not([data-ext])');if(!a)return;e.preventDefault();nav(a.getAttribute("href").slice(1))});
-function route(id=location.hash.slice(1)){VIEW=id;CURV?.clear();CURV=null;const app=$("#app");window.scrollTo(0,0);renderNav();
+function route(id=location.hash.slice(1)){MAPFS_CLOSE&&document.querySelector(".mapfs")&&MAPFS_CLOSE();MAPFS_CLOSE=null;VIEW=id;CURV?.clear();CURV=null;const app=$("#app");window.scrollTo(0,0);renderNav();
   const g=ALL_GAMES.find(x=>x.id===id);if(g){app.innerHTML="";g.run.start(app)}else if(id==="stats")statsPage(app);else if(id==="archive")archivePage(app);else hub(app)}
 window.addEventListener("hashchange",()=>route());
 
