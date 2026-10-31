@@ -105,6 +105,8 @@ button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:va
  .games.g6 .gcard:last-child{grid-column:1/-1}.games.g6 .gcard:last-child .pic{aspect-ratio:16/9}
  .me-strip{grid-template-columns:1fr 1fr 1fr}.me-strip>*{padding:10px 12px}.me-strip b{font-size:18px}.me-strip>div:first-child{grid-column:1/-1}.me-strip .btn{grid-column:1/-1}
 }
+.hilites{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px;text-align:left}.hilites li{padding:8px 12px;background:var(--panel2);border-radius:6px;font-size:15px;line-height:1.4}.hilites li.rec{color:#111;background:var(--amber);font-weight:600}
+.legend{font-size:12.5px;color:#B9B4A8;margin:0}
 .packs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
 .pack{border:1px dashed var(--line2);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
 .pack b{font-family:var(--display);font-size:15px;text-transform:uppercase;letter-spacing:.05em}
@@ -457,7 +459,7 @@ const EMPTY_STATS={games:{},guess:{n:0,hit:0,close:0,miss:0,sumErr:0},streak:{da
 function stats(){const s=store.get("stats",null);return s?{...EMPTY_STATS,...s,geo:s.geo||{n:0,loc:0,year:0}}:JSON.parse(JSON.stringify(EMPTY_STATS))}
 function logGuess(g,p){const s=stats();s.guess.n++;s.guess[grade(g,p)]++;s.guess.sumErr+=Math.min(5,Math.abs(g/p-1));store.set("stats",s)}
 function logGeo(sl,sy){const s=stats();s.geo.n++;s.geo.loc+=sl;s.geo.year+=sy;store.set("stats",s)}
-function logGame(id,pts){const s=stats();const g=s.games[id]||{plays:0,best:0,total:0};g.plays++;g.total+=pts;g.best=Math.max(g.best,pts);s.games[id]=g;
+function logGame(id,pts){const s=stats();const g=s.games[id]||{plays:0,best:0,total:0};g.prev=g.plays?g.best:null;g.plays++;g.total+=pts;g.best=Math.max(g.best,pts);s.games[id]=g;
   const today=new Date().toDateString();if(s.streak.last!==today){const y=new Date(Date.now()-864e5).toDateString();s.streak.days=s.streak.last===y?s.streak.days+1:1;s.streak.last=today}
   s.xp=(s.xp||0)+Math.round(pts*(XP_RATE[id]||0.05));store.set("stats",s);CAP.submit(id,g.best,s.xp);return g}
 
@@ -569,6 +571,9 @@ function dragKit(root,onDrop,onTap){root.querySelectorAll("[data-drag]").forEach
       if(ghost){ghost.remove();el.classList.remove("lifted");over?.classList.remove("hover");DRAGGING=false;if(ev.type==="pointerup"){if(over)onDrop(id,+over.dataset.slot);else if(el.dataset.slot!=null&&!document.elementFromPoint(ev.clientX,ev.clientY)?.closest(".slots"))onDrop(id,null)}}
       else if(!moved&&ev.type==="pointerup")onTap(id)};
     addEventListener("pointermove",move);addEventListener("pointerup",end);addEventListener("pointercancel",end)}})}
+/* итоги: лучший раунд, рекорд, расшифровка квадратиков */
+const hiBlock=(st,pts,lines,legend)=>{const rec=st&&st.prev!=null&&pts>st.prev?L(`Новый личный рекорд! Прошлый был ${ru(st.prev)}.`,`New personal best! Your previous best was ${ru(st.prev)}.`):st&&st.prev==null?L("Первый результат в этой игре.","Your first result in this game."):"";
+  const ls=[rec,...lines].filter(Boolean);return `${ls.length?`<ul class="hilites">${ls.map((t,i)=>`<li class="${i===0&&rec?"rec":""}">${t}</li>`).join("")}</ul>`:""}${legend?`<p class="legend">${legend}</p>`:""}`};
 /* у каждой игры свои вещи, чтобы одна игра не подсказывала ответы другой */
 const TL_IDS=["iphone","apple2","dynatac","gameboy","ps2","switch","ipad","walkman","famicom","zx","golf","fiat500","mini","watch","c64","mac","ps1","xbox"];
 const hashId=t=>{let h=7;for(const ch of t)h=(h*31+ch.charCodeAt(0))%1000003;return h};
@@ -1293,6 +1298,10 @@ const WhereGame={
    const grid=this.res.map(x=>sq(x.total,x.max)).join("");const share=`${(CFG.BRAND_EN||"Erascope")} · ${L("Где и когда","Where & When")}${this.mode==="daily"?" · "+L("вызов дня","daily"):""}\n${ru(total)} / ${ru(max)}\n${grid}`;
    this.el.innerHTML=`<div class="wide">${gameHead(L("Где и когда","Where & When"))}<section class="desk"><div class="card final"><div class="label">${this.mode==="daily"?L("Вызов дня завершён","Daily complete"):L("Игра завершена","Game over")}</div>
      <div class="total">${ru(total)}</div><div class="muted">${L("из","of")} ${ru(max)} · ${Math.round(total/max*100)}% · ${L("рекорд","best")} ${ru(st.best)}</div><div class="grid">${grid}</div>
+     ${(()=>{const b=[...this.res].sort((a,c)=>c.total/c.max-a.total/a.max)[0];const yd=b.dy===0?L("год точно","the exact year"):`${Math.abs(b.dy)} ${yearsText(b.dy)}`;const ok=this.res.filter(x=>x.d<500).length;
+       return hiBlock(st,total,[L(`Лучший кадр — ${esc(tr(b.r.place))}: ${distText(b.d)} от места, ошибка в годе — ${yd}.`,`Best shot: ${esc(tr(b.r.place))}, ${distText(b.d)} off, year off by ${yd}.`),
+         L(`Ближе 500 км от места: ${ok} ${L("из","of")} ${this.res.length}.`,`Within 500 km: ${ok} of ${this.res.length}.`)],
+         L("🟩 80% очков и больше · 🟨 50% · 🟧 25% · 🟥 меньше","🟩 80%+ of the points · 🟨 50%+ · 🟧 25%+ · 🟥 less"))})()}
      <div class="btns"><button id="copy">${L("Поделиться результатом","Share result")}</button><button class="go" id="again">${this.mode==="daily"?L("Свободная игра","Free play"):L("Ещё раз","Play again")}</button></div><div class="toast" id="toast"></div></div>
      <div class="card"><div class="label">${L("Разбор","Breakdown")}</div><div class="rows">${this.res.map(x=>`<div class="rrow"><span class="thumb"><img src="${roundSrc(x.r)}" alt=""></span>
        <div>${esc(tr(x.r.place))}, ${x.r.year}<br><span class="muted mono">${distText(x.d)} · ${x.dy===0?L("год точно","exact year"):(x.dy>0?"+":"")+x.dy+" "+yearsText(x.dy)}</span></div><b>${sq(x.total,x.max)} ${ru(x.total)}</b></div>`).join("")}</div></div></section></div>`;
@@ -1313,7 +1322,8 @@ const PriceGame={rounds:10,
    const share=`${(CFG.BRAND_EN||"Erascope")} · ${this.title()} ${ru(s.total)}/10 000\n${grid}\n${rank}`;
    this.el.innerHTML=`<div class="col">${gameHead(this.title())}<section class="card final"><div class="label">${L("Итог","Final score")}</div><div class="total">${ru(s.total)}</div>
      <div class="muted">${L("из","of")} 10 000 · ${rank} · ${L("рекорд","best")} ${ru(st.best)}</div>${tallyBlock(s.t)}
-     <div class="grid">${grid}</div><div class="btns"><button id="copy">${L("Поделиться результатом","Share result")}</button><button class="go" id="again">${L("Ещё раз","Play again")}</button></div><div class="toast" id="toast"></div>
+     <div class="grid">${grid}</div>${(()=>{const b=[...s.res].sort((a,c)=>Math.abs(Math.log(a.g/a.it.price))-Math.abs(Math.log(c.g/c.it.price)))[0];
+       return hiBlock(st,s.total,[L(`Точнее всего — ${tr(b.it.name)} (${b.it.year}): ${offText(b.g,b.it.price)}.`,`Closest guess: ${tr(b.it.name)} (${b.it.year}), ${offText(b.g,b.it.price)}.`)],L("🟩 ошибка до 10% · 🟨 до 30% · 🟥 больше","🟩 within 10% · 🟨 within 30% · 🟥 further off"))})()}<div class="btns"><button id="copy">${L("Поделиться результатом","Share result")}</button><button class="go" id="again">${L("Ещё раз","Play again")}</button></div><div class="toast" id="toast"></div>
      <div class="rows">${s.res.map(r=>`<div class="rrow"><span class="thumb">${imgTag(r.it)}</span><div>${tr(r.it.name)} · ${tr(r.it.place)}, ${r.it.year}<br><small class="muted">${L("вы","you")}: ${fmt(r.g,r.it.cur)} · ${L("правда","actual")}: ${fmt(r.it.price,r.it.cur)}</small></div><b>${GR[r.gr].sq} +${r.pts}</b></div>`).join("")}</div></section></div>`;
    $("#again").onclick=()=>this.start(this.el);$("#copy").onclick=()=>copyText(share,$("#toast"))}
 };
@@ -1353,11 +1363,12 @@ const TravelGame={max:8,
    <div class="fact"><div class="label" style="color:var(--amber)">${L("Справка","Did you know")}</div>${tr(it.fact)}</div>
    <button class="go" id="next">${dead?L("Батарея села…","Battery dead…"):s.i+1<this.max?L("Следующий прыжок","Next jump"):L("Домой","Head home")}</button></section></div>`;
    const b=$("#next");b.focus();b.onclick=()=>{if(dead)return this.finish(false);s.i++;s.i<this.max?this.jump():this.finish(true)}},
- finish(win){const s=this.s,pts=s.res.reduce((a,r)=>a+Math.max(0,100-r.e*10),0)+Math.max(0,s.bat)*10;logGame("travel",pts);const last=s.res[s.res.length-1].it;const grid=s.res.map(r=>GR[r.gr].sq).join("");
+ finish(win){const s=this.s,pts=s.res.reduce((a,r)=>a+Math.max(0,100-r.e*10),0)+Math.max(0,s.bat)*10;const st=logGame("travel",pts);const last=s.res[s.res.length-1].it;const grid=s.res.map(r=>GR[r.gr].sq).join("");
    const share=`${(CFG.BRAND_EN||"Erascope")} · ${this.title()}\n${win?L(`Вернулся домой с зарядом ${s.bat}%`,`Made it home with ${s.bat}% charge`):L(`Застрял в ${last.year} году`,`Stranded in ${last.year}`)}\n${grid}\n${ru(pts)} ${L("очков","pts")}`;
    this.el.innerHTML=`<div class="col">${gameHead(this.title())}<section class="card final"><div class="label">${win?L("Вы вернулись домой","You made it home"):L("Батарея села","Battery dead")}</div>
      <div class="total">${win?s.bat+"%":last.year}</div><p class="muted">${win?L("Капсула дотянула до наших дней. Можно хвастаться.","The capsule limped back to the present. Bragging rights earned."):L(`Заряд закончился. Путешествие завершилось: ${tr(last.place)}, ${last.year} год.`,`The battery ran out. Your journey ended in ${tr(last.place)}, ${last.year}.`)}</p>
-     <div class="grid">${grid}</div><div class="muted">${ru(pts)} ${L("очков","pts")}</div>
+     <div class="grid">${grid}</div><div class="muted">${ru(pts)} ${L("очков","pts")}</div>${(()=>{const b=[...s.res].sort((a,c)=>a.e-c.e)[0];
+       return hiBlock(st,pts,[b.e===0?L(`Точное попадание: ${tr(b.it.name)}, ${b.it.year} год.`,`Spot on: ${tr(b.it.name)}, ${b.it.year}.`):L(`Точнее всего — ${tr(b.it.name)}: ошибка ${b.e} ${yearsText(b.e)}.`,`Closest jump: ${tr(b.it.name)}, off by ${b.e} ${yearsText(b.e)}.`)],L("🟩 ошибка до 2 лет · 🟨 до 6 лет · 🟥 больше","🟩 within 2 years · 🟨 within 6 · 🟥 further off"))})()}
      <div class="btns"><button id="copy">${L("Поделиться","Share")}</button><button class="go" id="again">${L("Новое путешествие","New journey")}</button></div><div class="toast" id="toast"></div>
      <div class="rows">${s.res.map(r=>`<div class="rrow"><span class="thumb">${imgTag(r.it)}</span><div>${tr(r.it.name)} · ${fmt(r.it.price,r.it.cur)}<br><small class="muted">${L("вы","you")}: ${r.y} · ${L("правда","actual")}: ${r.it.year}</small></div><b>${r.delta>0?"+":""}${r.delta}%</b></div>`).join("")}</div></section></div>`;
    $("#again").onclick=()=>this.start(this.el);$("#copy").onclick=()=>copyText(share,$("#toast"))}
@@ -1498,7 +1509,8 @@ const AgentGame={rounds:5,attempts:3,
    this.el.innerHTML=`<div class="col">${gameHead(this.title())}<section class="card final"><div class="label">${L("Отчёт об операции","Mission report")}</div>
      <div class="total" style="font-size:clamp(30px,8vw,52px);text-transform:uppercase">${win?L("Хронограф возвращён","Chronograph recovered"):L("Вор ушёл","The thief got away")}</div>
      <p class="muted">${win?L(`Агент найден в ${found} городах из ${this.rounds}. Хронограф снова в музее, а «Сокол» получил отпуск.`,`Falcon was found in ${found} of ${this.rounds} cities. The chronograph is back in the museum, and Falcon gets a holiday.`):L(`Агент найден только в ${found} городах из ${this.rounds}. Вор успел скрыться, но операцию можно повторить.`,`Falcon was found in only ${found} of ${this.rounds} cities. The thief slipped away — try the operation again.`)}</p>
-     <div class="grid">${grid}</div><div class="muted">${ru(s.total)} ${L("очков","pts")} · ${L("рекорд","best")} ${ru(st.best)}</div>
+     <div class="grid">${grid}</div><div class="muted">${ru(s.total)} ${L("очков","pts")} · ${L("рекорд","best")} ${ru(st.best)}</div>${(()=>{const b=[...s.res].sort((a,c)=>a.d-c.d)[0];
+       return hiBlock(st,s.total,[L(`Ближе всего вы были в городе ${tr(b.c.city)}: ${distText(b.d)}.`,`Your closest pin: ${tr(b.c.city)}, ${distText(b.d)} away.`)],L("🟩 точно до города · 🟨 страна угадана · 🟥 след потерян","🟩 pinned the city · 🟨 right country · 🟥 trail lost"))})()}
      <div class="btns"><button id="copy">${L("Поделиться","Share")}</button><button class="go" id="again">${L("Новая операция","New operation")}</button></div><div class="toast" id="toast"></div>
      <div class="rows">${s.res.map(r=>`<div class="rrow"><span class="thumb"><img src="${photo(r.c.shot)}" alt=""></span><div>${tr(r.c.city)}, ${tr(r.c.country)}<br><small class="muted">${r.found?distText(r.d):L("не найден","not found")}</small></div><b>${sqa(r)} +${ru(r.pts)}</b></div>`).join("")}</div></section></div>`;
    $("#again").onclick=()=>this.start(this.el);$("#copy").onclick=()=>copyText(share,$("#toast"))}
@@ -1587,7 +1599,7 @@ const TimelineGame={rounds:3,size:5,
  finish(){const s=this.s,st=logGame("timeline",s.total),max=this.rounds*(this.size*200+200);const grid=s.res.map(r=>r.correct===this.size?"🟩":r.correct>=3?"🟨":"🟥").join("");
    const share=`${(CFG.BRAND_EN||"Erascope")} · ${this.title()} ${ru(s.total)}/${ru(max)}\n${grid}`;
    this.el.innerHTML=`<div class="col">${gameHead(this.title())}<section class="card final"><div class="label">${L("Музей открыт","The museum is open")}</div><div class="total">${ru(s.total)}</div>
-   <div class="muted">${L("из","of")} ${ru(max)} · ${L("рекорд","best")} ${ru(st.best)}</div><div class="grid">${grid}</div>
+   <div class="muted">${L("из","of")} ${ru(max)} · ${L("рекорд","best")} ${ru(st.best)}</div><div class="grid">${grid}</div>${hiBlock(st,s.total,[L(`Залов без единой ошибки: ${s.res.filter(r=>r.correct===this.size).length} из ${this.rounds}.`,`Perfect rooms: ${s.res.filter(r=>r.correct===this.size).length} of ${this.rounds}.`)],L("🟩 весь зал верно · 🟨 3–4 на месте · 🟥 меньше","🟩 whole room right · 🟨 3–4 in place · 🟥 fewer"))}
    <div class="btns"><button id="copy">${L("Поделиться","Share")}</button><button class="go" id="again">${L("Ещё раз","Play again")}</button></div><div class="toast" id="toast"></div></section></div>`;
    $("#again").onclick=()=>this.start(this.el);$("#copy").onclick=()=>copyText(share,$("#toast"))}
 };
