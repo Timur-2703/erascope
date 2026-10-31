@@ -474,6 +474,74 @@ const P={usa:{ru:"США",en:"USA"},kz:{ru:"Казахстан",en:"Kazakhstan"}
  de:{ru:"ФРГ",en:"West Germany"},gdr:{ru:"ГДР",en:"East Germany"},it:{ru:"Италия",en:"Italy"},in:{ru:"Индия",en:"India"}};
 const W=(ru,en)=>({ru,en});
 const ITEMS=[
+ {id:"atari2600",name:W("Atari 2600","Atari 2600"),detail:W("Игровая приставка на старте","Console at launch"),place:P.usa,year:1977,cur:"USD",price:189.95,cr:"Evan-Amos, public domain",
+  fact:W("Сначала она называлась Atari VCS. За всё время продали около 30 миллионов приставок.","It was first called the Atari VCS. Around 30 million were sold over its lifetime.")},
+ {id:"nes",name:W("Nintendo Entertainment System","Nintendo Entertainment System"),detail:W("Приставка на старте в США","Console at US launch"),place:P.usa,year:1985,cur:"USD",price:180,cr:"Evan-Amos, public domain",
+  fact:W("В Японии эта приставка вышла ещё в 1983 году под названием Famicom.","In Japan the same console had come out in 1983 as the Famicom.")},
+ {id:"genesis",name:W("Sega Genesis","Sega Genesis"),detail:W("Приставка на старте в США","Console at US launch"),place:P.usa,year:1989,cur:"USD",price:189,cr:"Evan-Amos, public domain",
+  fact:W("В Японии и Европе её знали как Mega Drive.","In Japan and Europe it was called the Mega Drive.")},
+ {id:"n64",name:W("Nintendo 64","Nintendo 64"),detail:W("Приставка на старте","Console at launch"),place:P.usa,year:1996,cur:"USD",price:199,cr:"Evan-Amos, public domain",
+  fact:W("Игры для неё выходили на картриджах, хотя конкуренты уже перешли на компакт-диски.","Its games came on cartridges while rivals had already moved to CDs.")},
+ {id:"gba",name:W("Game Boy Advance","Game Boy Advance"),detail:W("Портативная приставка на старте","Handheld at launch"),place:P.usa,year:2001,cur:"USD",price:99.99,cr:"Evan-Amos, public domain",
+  fact:W("У экрана не было подсветки, поэтому играть приходилось при хорошем свете.","The screen had no backlight, so you needed good light to play.")},
+ {id:"ps3",name:W("PlayStation 3","PlayStation 3"),detail:W("Версия на 60 ГБ на старте","60 GB model at launch"),place:P.usa,year:2006,cur:"USD",price:599,cr:"Evan-Amos, CC BY-SA 3.0",
+  fact:W("Версия на 20 ГБ стоила на $100 дешевле.","The 20 GB model cost $100 less.")},
+ {id:"ps4",name:W("PlayStation 4","PlayStation 4"),detail:W("Приставка на старте","Console at launch"),place:P.usa,year:2013,cur:"USD",price:399.99,cr:"Evan-Amos, public domain",
+  fact:W("Она стоила на $100 дешевле Xbox One, вышедшей в ту же неделю.","It was $100 cheaper than the Xbox One, released the same week.")},
+ {id:"ps5",name:W("PlayStation 5","PlayStation 5"),detail:W("Версия с дисководом на старте","Disc model at launch"),place:P.usa,year:2020,cur:"USD",price:499.99,cr:"Osh33m, CC BY-SA 4.0",
+  fact:W("Версия без дисковода стоила на $100 дешевле.","The digital edition without a disc drive cost $100 less.")},
+ {id:"dreamcast",name:W("Sega Dreamcast","Sega Dreamcast"),detail:W("Приставка на старте в США","Console at US launch"),place:P.usa,year:1999,cur:"USD",price:199,cr:"Asim Saleem, CC BY 3.0",
+  fact:W("Последняя приставка Sega: в 2001 году компания ушла с рынка консолей.","Sega's last console: the company left the hardware business in 2001.")},
+ {id:"ds",name:W("Nintendo DS","Nintendo DS"),detail:W("Портативная приставка на старте","Handheld at launch"),place:P.usa,year:2004,cur:"USD",price:149.99,cr:"Evan-Amos, public domain",
+  fact:W("Два экрана, один из них сенсорный. Продали больше 150 миллионов штук.","Two screens, one of them a touchscreen. Over 150 million were sold.")},
+ {id:"psp",name:W("Sony PSP","Sony PSP"),detail:W("Первая модель на старте в США","First model at US launch"),place:P.usa,year:2005,cur:"USD",price:249.99,cr:"Evan-Amos, public domain",
+  fact:W("Игры для неё выходили на маленьких дисках UMD.","Its games came on small UMD discs.")},
+ {id:"x360",name:W("Xbox 360","Xbox 360"),detail:W("Версия с жёстким диском на старте","Model with hard drive at launch"),place:P.usa,year:2005,cur:"USD",price:399,cr:"Evan-Amos, public domain",
+  fact:W("Версия без жёсткого диска стоила $299.","The model without a hard drive cost $299.")},
+ {id:"vboy",name:W("Nintendo Virtual Boy","Nintendo Virtual Boy"),detail:W("Приставка на старте","Console at launch"),place:P.usa,year:1995,cur:"USD",price:179.99,cr:"Evan-Amos, public domain",
+  fact:W("Показывала красное объёмное изображение и провалилась: продали меньше 800 тысяч штук.","It showed red 3D images and flopped, selling fewer than 800,000 units.")},
+ {id:"saturn",name:W("Sega Saturn","Sega Saturn"),detail:W("Приставка на старте в США","Console at US launch"),place:P.usa,year:1995,cur:"USD",price:399.99,cr:"Evan-Amos, CC BY-SA 3.0",
+  fact:W("В США её выпустили внезапно, на четыре месяца раньше объявленной даты.","In the US it launched by surprise, four months ahead of the announced date.")},
+ {id:"imac",name:W("iMac G3","iMac G3"),detail:W("Первая модель, цвет Bondi Blue","First model, Bondi Blue"),place:P.usa,year:1998,cur:"USD",price:1299,cr:"Stephen Hackett, CC BY-SA 4.0",
+  fact:W("Первый Mac без дисковода для дискет.","The first Mac without a floppy drive.")},
+ {id:"ibmpc",name:W("IBM PC 5150","IBM PC 5150"),detail:W("Базовая версия, 16 КБ памяти","Base model, 16 KB RAM"),place:P.usa,year:1981,cur:"USD",price:1565,cr:"Unknown author, CC BY-SA 3.0",
+  fact:W("Базовая цена без дисководов и монитора: программы загружали с кассеты.","The base price had no disk drives or monitor: software loaded from cassette.")},
+ {id:"iphone3g",name:W("iPhone 3G","iPhone 3G"),detail:W("8 ГБ, с двухлетним контрактом","8 GB, with a two-year contract"),place:P.usa,year:2008,cur:"USD",price:199,cr:"gillyberlin, CC BY 2.0",
+  fact:W("Вместе с ним открылся App Store.","The App Store opened alongside it.")},
+ {id:"iphonex",name:W("iPhone X","iPhone X"),detail:W("64 ГБ на старте","64 GB at launch"),place:P.usa,year:2017,cur:"USD",price:999,cr:"Gregory Varnum, CC BY-SA 4.0",
+  fact:W("Первый iPhone без кнопки «Домой» и с разблокировкой по лицу.","The first iPhone without a Home button, unlocked by face.")},
+ {id:"rpi",name:W("Raspberry Pi","Raspberry Pi"),detail:W("Model B на старте","Model B at launch"),place:P.uk,year:2012,cur:"USD",price:35,cr:"Tors, CC BY-SA 3.0 de",
+  fact:W("Его задумали как дешёвый компьютер, чтобы школьники учились программировать.","It was designed as a cheap computer for teaching schoolchildren to code.")},
+ {id:"models",name:W("Tesla Model S","Tesla Model S"),detail:W("Базовая версия, до налогового вычета","Base model, before tax credit"),place:P.usa,year:2012,cur:"USD",price:57400,cr:"Granada, CC BY-SA 4.0",
+  fact:W("Базовую версию с самой маленькой батареей заказывали так редко, что её быстро сняли с продажи.","So few buyers ordered the base battery that it was soon dropped.")},
+ {id:"palm",name:W("PalmPilot 1000","PalmPilot 1000"),detail:W("Карманный компьютер на старте","Handheld organiser at launch"),place:P.usa,year:1996,cur:"USD",price:299,cr:"Ndiggity, CC BY-SA 4.0",
+  fact:W("Текст вводили стилусом специальным упрощённым почерком Graffiti.","You wrote with a stylus in a simplified alphabet called Graffiti.")},
+ {id:"bbcmicro",name:W("BBC Micro Model B","BBC Micro Model B"),detail:W("Домашний компьютер на старте","Home computer at launch"),place:P.uk,year:1981,cur:"GBP",price:335,cr:"Stuart Brady, public domain",
+  fact:W("Компьютер сделали для телепрограммы BBC о компьютерной грамотности, и он появился почти в каждой британской школе.","It was built for a BBC computer literacy series and ended up in most British schools.")},
+ {id:"brownie",name:W("Kodak Brownie","Kodak Brownie"),detail:W("Первая модель","The original model"),place:P.usa,year:1900,cur:"USD",price:1,cr:"cogdogblog, CC0",
+  fact:W("Плёнка на шесть кадров стоила 15 центов. Фотография стала доступна почти всем.","A six-shot roll of film cost 15 cents, putting photography within almost everyone's reach.")},
+ {id:"prius",name:W("Toyota Prius","Toyota Prius"),detail:W("Первое поколение в США","First generation, US"),place:P.usa,year:2000,cur:"USD",price:19995,cr:"FotoSleuth, CC BY 2.0",
+  fact:W("Первый массовый гибрид. В Японии его продавали с 1997 года.","The first mass-market hybrid; it had been on sale in Japan since 1997.")},
+ {id:"rift",name:W("Oculus Rift","Oculus Rift"),detail:W("Шлем виртуальной реальности на старте","VR headset at launch"),place:P.usa,year:2016,cur:"USD",price:599.99,cr:"Evan-Amos, public domain",
+  fact:W("Проект начался с кампании на Kickstarter в 2012 году.","The project began as a Kickstarter campaign in 2012.")},
+ {id:"amiga",name:W("Commodore Amiga 1000","Commodore Amiga 1000"),detail:W("Без монитора, на старте","Without monitor, at launch"),place:P.usa,year:1985,cur:"USD",price:1285,cr:"Rama & Musée Bolo, CC BY-SA 2.0 fr",
+  fact:W("На презентации Энди Уорхол рисовал на Amiga портрет Дебби Харри.","At the launch Andy Warhol painted a portrait of Debbie Harry on an Amiga.")},
+ {id:"amstrad",name:W("Amstrad CPC 464","Amstrad CPC 464"),detail:W("С цветным монитором","With colour monitor"),place:P.uk,year:1984,cur:"GBP",price:359,cr:"Bill Bertram, CC BY-SA 2.5",
+  fact:W("Кассетный магнитофон был встроен прямо в корпус.","The cassette deck was built right into the case.")},
+ {id:"discman",name:W("Sony Discman D-50","Sony Discman D-50"),detail:W("Первый портативный CD-плеер","The first portable CD player"),place:P.jp,year:1984,cur:"JPY",price:49800,cr:"Siren-Com, CC BY-SA 3.0",
+  fact:W("Он был чуть больше коробки от компакт-диска.","It was barely bigger than a CD case.")},
+ {id:"mustang",name:W("Ford Mustang","Ford Mustang"),detail:W("Базовая версия, первый год","Base model, first year"),place:P.usa,year:1964,cur:"USD",price:2368,cr:"Ermell, CC BY-SA 4.0",
+  fact:W("За первый год продали больше 400 тысяч машин.","Over 400,000 were sold in the first year.")},
+ {id:"lisa",name:W("Apple Lisa","Apple Lisa"),detail:W("Компьютер на старте","Computer at launch"),place:P.usa,year:1983,cur:"USD",price:9995,cr:"Rama & Musée Bolo, CC BY-SA 2.0 fr",
+  fact:W("Один из первых компьютеров с мышью и окнами. Из-за цены продавался плохо.","One of the first computers with a mouse and windows; its price kept sales low.")},
+ {id:"newton",name:W("Apple Newton MessagePad","Apple Newton MessagePad"),detail:W("Первая модель","First model"),place:P.usa,year:1993,cur:"USD",price:699,cr:"National Museum of American History, CC0",
+  fact:W("Распознавание почерка так часто ошибалось, что над ним шутили в «Симпсонах».","Its handwriting recognition misfired so often that The Simpsons made fun of it.")},
+ {id:"maruti",name:W("Maruti 800","Maruti 800"),detail:W("Первый год выпуска","First year"),place:P.in,year:1983,cur:"INR",price:47500,cr:"Navas Puthanazhi, CC BY-SA 4.0",
+  fact:W("Ключи от первой машины вручила покупателю Индира Ганди.","Indira Gandhi handed the keys of the first car to its buyer.")},
+ {id:"corvette",name:W("Chevrolet Corvette","Chevrolet Corvette"),detail:W("Первый год выпуска","First year"),place:P.usa,year:1953,cur:"USD",price:3498,cr:"TTTNIS, CC0",
+  fact:W("В первый год собрали всего 300 машин, все белые с красным салоном.","Only 300 were built in the first year, all white with red interiors.")},
+ {id:"glass",name:W("Google Glass","Google Glass"),detail:W("Версия Explorer","Explorer Edition"),place:P.usa,year:2013,cur:"USD",price:1500,cr:"Ted Eytan, CC BY-SA 2.0",
+  fact:W("Очки продавали только участникам программы Explorer.","They were sold only to members of the Explorer programme.")},
  {id:"iphone",name:W("Первый iPhone","Original iPhone"),detail:W("4 ГБ, на старте продаж","4 GB, at launch"),place:P.usa,year:2007,cur:"USD",price:499,cr:"Andrew from London, CC BY-SA 2.0",
   fact:W("Через два месяца версию на 8 ГБ уценили с $599 до $399, и Apple выдала первым покупателям по $100 в качестве компенсации.","Two months later the 8 GB model was cut from $599 to $399, and Apple gave early buyers a $100 store credit.")},
  {id:"mac",name:W("Apple Macintosh","Apple Macintosh"),detail:W("Самый первый «Мак» с мышью","The very first Mac, mouse included"),place:P.usa,year:1984,cur:"USD",price:2495,cr:"Sailko, CC BY 3.0",
@@ -582,7 +650,7 @@ const REPLAY_SAFE=()=>typeof REPLAY!=="undefined"&&REPLAY;
 const hiBlock=(st,pts,lines,legend)=>{const rec=st&&st.prev!=null&&pts>st.prev?L(`Новый личный рекорд! Прошлый был ${ru(st.prev)}.`,`New personal best! Your previous best was ${ru(st.prev)}.`):st&&st.prev==null?L("Первый результат в этой игре.","Your first result in this game."):"";
   const ls=[rec,...lines].filter(Boolean);return `${ls.length?`<ul class="hilites">${ls.map((t,i)=>`<li class="${i===0&&rec?"rec":""}">${t}</li>`).join("")}</ul>`:""}${legend?`<p class="legend">${legend}</p>`:""}`};
 /* у каждой игры свои вещи, чтобы одна игра не подсказывала ответы другой */
-const TL_IDS=["iphone","apple2","dynatac","gameboy","ps2","switch","ipad","walkman","famicom","zx","golf","fiat500","mini","watch","c64","mac","ps1","xbox"];
+const TL_IDS=["iphone","apple2","dynatac","gameboy","ps2","switch","ipad","walkman","famicom","zx","golf","fiat500","mini","watch","c64","mac","ps1","xbox","atari2600","nes","genesis","n64","gba","ps3","ps4","ps5"];
 const hashId=t=>{let h=7;for(const ch of t)h=(h*31+ch.charCodeAt(0))%1000003;return h};
 const POOL=g=>ITEMS.filter(i=>{if(TL_IDS.includes(i.id))return g==="timeline";if(g==="timeline")return false;return (hashId(i.id)%2===0)===(g==="price")});
 function pickItems(n,pool=ITEMS,maxSeries=2){const out=[],cnt={};for(const it of shuffle(pool)){if(it.series){cnt[it.series]=(cnt[it.series]||0)+1;if(cnt[it.series]>maxSeries)continue}out.push(it);if(out.length===n)break}return out}
@@ -1062,7 +1130,7 @@ const NOTES={
 };
 GEO.forEach(g=>{g.note=NOTES[g.id]});
 /* Индекс потребительских цен США (BLS, средние за год) — для пересчёта в цены 2024 года */
-const CPI={1925:17.5,1950:24.1,1963:30.6,1970:38.8,1972:41.8,1977:60.6,1980:82.4,1982:96.5,1984:103.9,1989:124.0,1995:152.4,2000:172.2,2001:177.1,2006:201.6,2007:207.3,2010:218.1,2011:224.9,2015:237.0,2017:245.1,2024:313.7};
+const CPI={1925:17.5,1950:24.1,1953:26.7,1963:30.6,1964:31.0,1981:90.9,1983:99.6,1985:107.6,1993:144.5,1996:156.9,1998:163.0,1999:166.6,2004:188.9,2005:195.3,2008:215.3,2012:229.6,2013:233.0,2016:240.0,2020:258.8,1970:38.8,1972:41.8,1977:60.6,1980:82.4,1982:96.5,1984:103.9,1989:124.0,1995:152.4,2000:172.2,2001:177.1,2006:201.6,2007:207.3,2010:218.1,2011:224.9,2015:237.0,2017:245.1,2024:313.7};
 const todayUSD=it=>it.cur==="USD"&&CPI[it.year]&&it.year<2024?it.price*CPI[2024]/CPI[it.year]:null;
 
 /* ================= общие куски ================= */
