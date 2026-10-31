@@ -1298,8 +1298,8 @@ const WhereGame={
    const grid=this.res.map(x=>sq(x.total,x.max)).join("");const share=`${(CFG.BRAND_EN||"Erascope")} · ${L("Где и когда","Where & When")}${this.mode==="daily"?" · "+L("вызов дня","daily"):""}\n${ru(total)} / ${ru(max)}\n${grid}`;
    this.el.innerHTML=`<div class="wide">${gameHead(L("Где и когда","Where & When"))}<section class="desk"><div class="card final"><div class="label">${this.mode==="daily"?L("Вызов дня завершён","Daily complete"):L("Игра завершена","Game over")}</div>
      <div class="total">${ru(total)}</div><div class="muted">${L("из","of")} ${ru(max)} · ${Math.round(total/max*100)}% · ${L("рекорд","best")} ${ru(st.best)}</div><div class="grid">${grid}</div>
-     ${(()=>{const b=[...this.res].sort((a,c)=>c.total/c.max-a.total/a.max)[0];const yd=b.dy===0?L("год точно","the exact year"):`${Math.abs(b.dy)} ${yearsText(b.dy)}`;const ok=this.res.filter(x=>x.d<500).length;
-       return hiBlock(st,total,[L(`Лучший кадр — ${esc(tr(b.r.place))}: ${distText(b.d)} от места, ошибка в годе — ${yd}.`,`Best shot: ${esc(tr(b.r.place))}, ${distText(b.d)} off, year off by ${yd}.`),
+     ${(()=>{const b=[...this.res].sort((a,c)=>c.total/c.max-a.total/a.max)[0];const yd=b.dy===0?L("год угадан точно","exact year"):L(`ошибка в годе — ${Math.abs(b.dy)} ${yearsText(b.dy)}`,`year off by ${Math.abs(b.dy)} ${yearsText(b.dy)}`);const ok=this.res.filter(x=>x.d<500).length;
+       return hiBlock(st,total,[L(`Лучший кадр — ${esc(tr(b.r.place))}: ${distText(b.d)} от места, ${yd}.`,`Best shot: ${esc(tr(b.r.place))}, ${distText(b.d)} off, ${yd}.`),
          L(`Ближе 500 км от места: ${ok} ${L("из","of")} ${this.res.length}.`,`Within 500 km: ${ok} of ${this.res.length}.`)],
          L("🟩 80% очков и больше · 🟨 50% · 🟧 25% · 🟥 меньше","🟩 80%+ of the points · 🟨 50%+ · 🟧 25%+ · 🟥 less"))})()}
      <div class="btns"><button id="copy">${L("Поделиться результатом","Share result")}</button><button class="go" id="again">${this.mode==="daily"?L("Свободная игра","Free play"):L("Ещё раз","Play again")}</button></div><div class="toast" id="toast"></div></div>
