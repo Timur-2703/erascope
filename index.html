@@ -81,7 +81,7 @@ button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:va
 .gcard{display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;text-decoration:none;color:var(--fg)}
 .gcard:hover{border-color:var(--line2)}
 .gcard .pic{position:relative;aspect-ratio:16/9;background:var(--photo);overflow:hidden;display:block}
-.gcard .pic img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.85);transition:transform .4s ease}
+.gcard .pic img[src*="cover_"]{object-fit:contain;background:#14171C}.gcard .pic img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.85);transition:transform .4s ease}
 .gcard:hover .pic img{transform:scale(1.05)}
 .gcard .pic .badges{position:absolute;left:10px;bottom:10px}
 .gcard .body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px}
@@ -89,6 +89,22 @@ button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:va
 .gcard p{font-size:14px;color:var(--muted)}
 .sectionhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px}
 .sectionhead h2{font-size:18px;text-transform:uppercase;letter-spacing:.1em}
+.soon{border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.soon summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.soon summary::-webkit-details-marker{display:none}.soon summary::after{content:"▸";margin-left:auto;color:var(--muted)}.soon[open] summary::after{content:"▾"}
+.soon .packs{margin-top:12px}
+@media (max-width:640px){
+ .hero2{min-height:330px}.hero2-in{padding-bottom:56px;gap:8px}.hero2 h1{font-size:34px}.hero2 p{font-size:14px}
+ .games.g6{grid-template-columns:1fr 1fr;gap:10px}
+ .gcard.big{grid-column:1/-1}
+ .gcard:not(.big) .pic{aspect-ratio:4/3}
+ .gcard:not(.big) .body{padding:8px 10px 10px}
+ .gcard:not(.big) h3{font-size:15px}
+ .gcard:not(.big) p{font-size:12.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+ .gcard:not(.big) .badges .badge+.badge{display:none}
+ .games.g6 .gcard:last-child{grid-column:1/-1}.games.g6 .gcard:last-child .pic{aspect-ratio:16/9}
+ .me-strip{grid-template-columns:1fr 1fr 1fr}.me-strip>*{padding:10px 12px}.me-strip b{font-size:18px}.me-strip>div:first-child{grid-column:1/-1}.me-strip .btn{grid-column:1/-1}
+}
 .packs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
 .pack{border:1px dashed var(--line2);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
 .pack b{font-family:var(--display);font-size:15px;text-transform:uppercase;letter-spacing:.05em}
@@ -371,9 +387,9 @@ ul.ticks li::before{content:"";position:absolute;left:3px;top:7px;width:9px;heig
 .gcard.big{grid-column:span 2;grid-row:span 2}.gcard.big .pic{aspect-ratio:auto;flex:1;min-height:260px}.gcard.big h3{font-size:26px}
 .gcard .meta{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
 @media (max-width:900px){.games.g6{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:640px){.games.g6{grid-template-columns:1fr}.gcard.big{grid-column:auto;grid-row:auto}.gcard.big .pic{min-height:0;aspect-ratio:16/9}
- .me-strip{grid-template-columns:1fr 1fr}.me-strip>div:first-child{grid-column:1/-1}.me-strip .btn{grid-column:1/-1}
- .eras span{font-size:10px}.eras span:nth-child(2),.eras span:nth-child(3){display:none}}
+@media (max-width:640px){.games.g6{grid-template-columns:1fr 1fr}.gcard.big{grid-column:1/-1;grid-row:auto}.gcard.big .pic{min-height:0;aspect-ratio:16/9}
+ .me-strip{grid-template-columns:1fr 1fr 1fr}.me-strip>div:first-child{grid-column:1/-1}.me-strip .btn{grid-column:1/-1}
+ .eras span{font-size:9px}.eras b{display:block}}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
@@ -1499,7 +1515,7 @@ const BagGame={
  title:()=>L("Собери сумку","Pack the Bag"),
  start(el){this.el=el;this.cfg=this.cfg||{shelf:LANG==="en"?"usa":"usa",names:[L("Игрок 1","Player 1"),L("Игрок 2","Player 2")]};this.setup()},
  setup(){const c=this.cfg;
-   this.el.innerHTML=`<div class="col">${gameHead(this.title())}${introImg(photo("kzbread"))}
+   this.el.innerHTML=`<div class="col">${gameHead(this.title())}${introImg(photo("cover_bag"))}
    <section class="card"><p class="story">${L("Игра для компании на одном телефоне. У каждого одинаковый бюджет и одна полка с товарами, но ценники стёрты.","A party game on one phone. Everyone gets the same budget and the same shelf — but the price tags are gone.")}</p>
    <p class="story">${L(`По очереди выберите <b>${SHELVES[c.shelf].pick} ${plural(SHELVES[c.shelf].pick,"товар","товара","товаров")}</b> со скрытыми ценами. Побеждает тот, кто потратит <b>ближе всех к бюджету, не превышая его</b>. Если суммы равны — ничья.`,`Take turns picking <b>${SHELVES[c.shelf].pick} items</b> with hidden prices. Whoever spends <b>closest to the budget without going over</b> wins. Equal totals are a tie.`)}</p>
    <div class="label">${L("Магазин","Store")}</div><div class="seg" id="shelfSeg">${Object.entries(SHELVES).map(([k,v])=>`<button data-k="${k}" aria-pressed="${c.shelf===k}">${tr(v.name)}</button>`).join("")}</div>
@@ -1541,7 +1557,7 @@ const BagGame={
 const TimelineGame={rounds:3,size:5,
  title:()=>L("Хронолог","Timeline"),
  start(el){this.el=el;this.s={i:0,total:0,res:[]};this.intro()},
- intro(){this.el.innerHTML=`<div class="col">${gameHead(this.title())}${introImg(photo("g5"))}
+ intro(){this.el.innerHTML=`<div class="col">${gameHead(this.title())}${introImg(photo("cover_timeline"))}
    <section class="card"><p class="story">${L("В музее перепутали таблички с годами. Перед вами вещи, у каждой есть год, когда она поступила в продажу.","The museum mixed up its year labels. Each exhibit here has the year it first went on sale.")}</p>
    <p class="story">${L("Расставьте вещи от самой ранней к самой поздней. Зажмите карточку и перетащите её в любую ячейку. Можно и просто нажать: карточка встанет в первую свободную ячейку.","Put them in order from earliest to latest. Press and drag a card into any slot, or just tap it to fill the next empty slot.")}</p>
    <ul class="ticks small"><li>${L(`${this.rounds} зала по ${this.size} вещей`,`${this.rounds} rooms, ${this.size} exhibits each`)}</li><li>${L("200 очков за каждую вещь на своём месте и +200, если весь зал без ошибок","200 points for each exhibit in the right slot, +200 for a perfect room")}</li></ul>
@@ -1652,8 +1668,8 @@ const GAMES=[
  {id:"agent",title:()=>AgentGame.title(),desc:W("Операция «Хронограф»: определите, где находится агент, по присланным им фотографиям и уликам.","Operation Chronograph: work out where your agent is from the photos he sends and the clues."),meta:W("5 городов · ~6 мин","5 cities · ~6 min"),tag:W("Сюжет","Story"),img:"g6",run:AgentGame},
  {id:"price",title:()=>PriceGame.title(),desc:W("Перед вами предмет, страна и год. Угадайте, сколько он тогда стоил, в валюте того времени.","An item, a country and a year. Guess what it cost back then, in the money of the day."),meta:W("10 вещей · ~3 мин","10 items · ~3 min"),tag:W("Цены","Prices"),img:"mac",run:PriceGame},
  {id:"travel",title:()=>TravelGame.title(),desc:W("Вам известны предмет, страна и цена. Определите год и сохраните заряд машины времени.","You know the item, the country and the price. Work out the year and keep the time machine charged."),meta:W("8 прыжков · ~3 мин","8 jumps · ~3 min"),tag:W("Годы","Years"),img:"g4",run:TravelGame},
- {id:"timeline",title:()=>TimelineGame.title(),desc:W("Расположите вещи от самой ранней к самой поздней по году выхода в продажу.","Put the exhibits in order, from earliest to latest release."),meta:W("3 зала · ~2 мин","3 rooms · ~2 min"),tag:W("Логика","Logic"),img:"g5",run:TimelineGame},
- {id:"bag",title:()=>BagGame.title(),desc:W("Выберите покупки со скрытыми ценами. Побеждает тот, кто ближе всех к бюджету, не превышая его. Играйте по очереди на одном телефоне.","Pick shopping with hidden prices. Closest to the budget without going over wins. Take turns on one phone."),meta:W("2–6 игроков · ~10 мин","2–6 players · ~10 min"),tag:W("Для компании","Party"),img:"kzbread",run:BagGame}
+ {id:"timeline",title:()=>TimelineGame.title(),desc:W("Расположите вещи от самой ранней к самой поздней по году выхода в продажу.","Put the exhibits in order, from earliest to latest release."),meta:W("3 зала · ~2 мин","3 rooms · ~2 min"),tag:W("Логика","Logic"),img:"cover_timeline",run:TimelineGame},
+ {id:"bag",title:()=>BagGame.title(),desc:W("Выберите покупки со скрытыми ценами. Побеждает тот, кто ближе всех к бюджету, не превышая его. Играйте по очереди на одном телефоне.","Pick shopping with hidden prices. Closest to the budget without going over wins. Take turns on one phone."),meta:W("2–6 игроков · ~10 мин","2–6 players · ~10 min"),tag:W("Для компании","Party"),img:"cover_bag",run:BagGame}
 ];
 const ALL_GAMES=GAMES;
 function accuracy(g){return g.n?Math.round((g.hit+g.close)/g.n*100):0}
@@ -1667,16 +1683,16 @@ function hub(el){const s=stats(),lv=levelOf(s.xp||0),daily=store.get("daily_"+da
       <div class="hero2-cta">${daily?`<span class="dailydone">${L("Испытание дня завершено","Today’s daily is done")} · ${ru(daily.total)}</span><a class="btn go" href="#stats">${L("Посмотреть результат","See your result")}</a><a class="btn ghost-l" href="#where">${L("Свободная игра","Free play")}</a>`
         :`<a class="btn go" href="#where" id="playDaily">${L("Играть вызов дня","Play today's daily")}</a><a class="btn ghost-l" href="#games" id="toGames">${L("Все игры","All games")} ↓</a>`}</div></div>
     <div class="eras" aria-hidden="true">${eras.map(([x,y,r,e])=>`<span style="left:${x}%"><b>${y}</b>${L(r,e)}</span>`).join("")}</div></section>
-  <section class="me-strip">
-    <div><span class="label">${L("Уровень","Level")} ${lv.n}</span><b>${lv.title}</b><div class="xp"><i style="width:${lv.pct}%"></i></div></div>
-    <div><span class="label">${L("Дней игры подряд","Days in a row")}</span><b>${s.streak.days||0}</b></div>
-    <div><span class="label">${L("Игр завершено","Games finished")}</span><b>${ru(plays)}</b></div>
-    <a class="btn ghost" href="#stats">${L("Рейтинг","Leaderboard")} →</a></section>
   <div class="sectionhead" id="games"><h2>${L("Игры","Games")}</h2><span class="muted small">${L("Все бесплатно","All free")}</span></div>
   <div class="games g6">${GAMES.map((x,i)=>`<a class="gcard${i===0?" big":""}" href="#${x.id}"><span class="pic"><img src="${photo(x.img)}" alt="" loading="${i<2?"eager":"lazy"}"><span class="badges"><span class="badge${i===0?" a":""}">${tr(x.tag)}</span>${s.games[x.id]?`<span class="badge">${L("Рекорд","Best")} ${ru(s.games[x.id].best)}</span>`:""}</span></span>
     <div class="body"><h3>${x.title()}</h3><p>${tr(x.desc)}</p><span class="meta mono">${tr(x.meta)}</span></div></a>`).join("")}</div>
-  <div class="sectionhead"><h2>${L("Скоро","Coming soon")}</h2><span class="muted small">${L("Новые подборки и режимы","New collections and modes")}</span></div>
-  <div class="packs">${[[W("Советский Союз","Soviet Union"),W("Вещи, цены и улицы СССР","Soviet goods, prices and streets")],[W("Япония 80-х","1980s Japan"),W("Пузырь, иены и плееры","The bubble, yen and Walkmans")],[W("Гаджеты","Gadgets"),W("От пейджера до складных телефонов","From pagers to foldables")],[W("Автомобили века","Cars of the century"),W("Сколько стоили легенды автопрома","What the classic cars cost")],[W("Столицы ночью","Capitals by night"),W("Угадай город по ночным огням","Guess the city by its lights")],[W("Еда мира","World food"),W("Уличная еда и цены на рынках","Street food and market prices")],[W("Олимпиады","Olympics"),W("Города и годы Игр","Host cities and years")],[W("Казахстан","Kazakhstan"),W("От Алма-Аты до Астаны","From Alma-Ata to Astana")],[W("Голос улицы","Street Poll"),W("Угадай, что ответили все","Guess what everyone answered")],[W("Дуэли","Duels"),W("Один на один в реальном времени","Head-to-head in real time")]].map(([a,c])=>`<div class="pack"><b>${tr(a)}</b><span class="small muted">${tr(c)}</span></div>`).join("")}</div>
+  ${plays?`<section class="me-strip">
+    <div><span class="label">${L("Уровень","Level")} ${lv.n}</span><b>${lv.title}</b><div class="xp"><i style="width:${lv.pct}%"></i></div></div>
+    <div><span class="label">${L("Дней игры подряд","Days in a row")}</span><b>${s.streak.days||0}</b></div>
+    <div><span class="label">${L("Игр завершено","Games finished")}</span><b>${ru(plays)}</b></div>
+    <a class="btn ghost" href="#stats">${L("Рейтинг","Leaderboard")} →</a></section>`:""}
+  <details class="soon"><summary><b>${L("Скоро","Coming soon")}</b> <span class="muted small">${L("Новые подборки и режимы","New collections and modes")}</span></summary>
+  <div class="packs">${[[W("Советский Союз","Soviet Union"),W("Вещи, цены и улицы СССР","Soviet goods, prices and streets")],[W("Япония 80-х","1980s Japan"),W("Пузырь, иены и плееры","The bubble, yen and Walkmans")],[W("Гаджеты","Gadgets"),W("От пейджера до складных телефонов","From pagers to foldables")],[W("Автомобили века","Cars of the century"),W("Сколько стоили легенды автопрома","What the classic cars cost")],[W("Столицы ночью","Capitals by night"),W("Угадай город по ночным огням","Guess the city by its lights")],[W("Еда мира","World food"),W("Уличная еда и цены на рынках","Street food and market prices")],[W("Олимпиады","Olympics"),W("Города и годы Игр","Host cities and years")],[W("Казахстан","Kazakhstan"),W("От Алма-Аты до Астаны","From Alma-Ata to Astana")],[W("Голос улицы","Street Poll"),W("Угадай, что ответили все","Guess what everyone answered")],[W("Дуэли","Duels"),W("Один на один в реальном времени","Head-to-head in real time")]].map(([a,c])=>`<div class="pack"><b>${tr(a)}</b><span class="small muted">${tr(c)}</span></div>`).join("")}</div></details>
   <p class="note">${L(`Бета-версия. ${ITEMS.length} вещей, ${GEO.length} кадров и ${CASES.length} городов. Цены приблизительные, в валюте того года, без поправки на инфляцию.`,`Beta. ${ITEMS.length} items, ${GEO.length} shots and ${CASES.length} cities. Prices are approximate, in the currency of the day, not adjusted for inflation.`)}</p></div>`;
   const tg=$("#toGames");if(tg)tg.onclick=e=>{e.preventDefault();e.stopPropagation();$("#games").scrollIntoView({behavior:"smooth"})};
   const pd=$("#playDaily");if(pd)pd.onclick=e=>{e.preventDefault();e.stopPropagation();nav("where");WhereGame.begin("daily")}}
