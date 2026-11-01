@@ -109,6 +109,17 @@ button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:va
  .games.g6 .gcard:last-child{grid-column:1/-1}.games.g6 .gcard:last-child .pic{aspect-ratio:16/9}
  .me-strip{grid-template-columns:1fr 1fr 1fr}.me-strip>*{padding:10px 12px}.me-strip b{font-size:18px}.me-strip>div:first-child{grid-column:1/-1}.me-strip .btn{grid-column:1/-1}
 }
+.dio{position:relative;height:min(62vh,460px);border-radius:10px;overflow:hidden;background:#1b1814;border:1px solid var(--line);margin:8px 0}.dio canvas{display:block;width:100%;height:100%;filter:sepia(.35) contrast(1.05)}
+.dio .dtag{position:absolute;left:10px;top:10px;z-index:2;pointer-events:none}.dio .dcount{position:absolute;right:10px;top:10px;z-index:2;pointer-events:none;color:var(--amber)}
+.cplace{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-top:6px}.cplace b{font-family:var(--display);font-size:20px;text-transform:uppercase}.cplace .mono{color:var(--amber);font-size:13px}
+.clues{display:grid;gap:8px;margin:6px 0 80px}.clues .fact.new{border-color:var(--amber);animation:fl 1.2s}@keyframes fl{from{background:rgba(240,166,58,.25)}to{background:transparent}}
+.leads{display:grid;gap:8px;margin:10px 0}.lead{text-align:left;text-transform:none;letter-spacing:0;font:500 15px var(--body);padding:12px 14px}.lead.used{opacity:.4;text-decoration:line-through}
+.leadimg{float:right;width:84px;height:110px;object-fit:cover;border-radius:6px;margin:0 0 6px 10px}.cold{border-color:rgba(240,82,82,.5)}.hotc{border-color:rgba(76,175,80,.6);margin:8px 0}
+.suspects{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.susp{display:grid;gap:4px;padding:8px;text-align:left;text-transform:none;letter-spacing:0;font:400 13px var(--body);align-content:start}.susp img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;filter:grayscale(.2)}.susp b{font-size:14px}
+.truth{display:grid;gap:12px;margin-top:8px}.truth figure{margin:0;display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:start}.truth img{width:96px;height:120px;object-fit:cover;border-radius:6px}.truth figcaption{font-size:14px;line-height:1.45}
+.ctitle{font-family:var(--display);font-size:28px;text-transform:uppercase;margin:4px 0}
+@media (max-width:420px){.suspects{grid-template-columns:1fr}.susp{grid-template-columns:80px 1fr;align-items:center}.susp img{grid-row:span 3;width:80px}}
+
 .dloop{display:grid;gap:6px;justify-items:center;margin:4px 0 2px;text-align:center}.dloop .fire{font-size:18px}.dloop .fire b{font-size:22px;color:var(--amber)}.drank{font-size:16px;font-weight:600;color:var(--fg)}.drank:empty{display:none}
 .dstat{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-family:var(--mono);font-size:13px;color:#E8E4DA}.dstat .g{letter-spacing:1px}
 .hilites{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px;text-align:left}.hilites li{padding:8px 12px;background:var(--panel2);border-radius:6px;font-size:15px;line-height:1.4}.hilites li.rec{color:#111;background:var(--amber);font-weight:600}
@@ -1902,6 +1913,181 @@ function openFeedback(){if(document.querySelector(".fbm"))return;const m=documen
 function onCap(){renderNav();CAP.flush()}
 function archiveList(){}function archivePage(el){hub(el)}
 
+/* ================= Дело: погоня по реальному делу ================= */
+/* 3D-реконструкция комнаты на three.js: стены, мебель, настоящие картины и фото как текстуры. Улики — светящиеся метки, их ищут, поворачивая камеру. */
+const WM=n=>"https://upload.wikimedia.org/wikipedia/commons/"+n;
+function cvTex(w,h,draw){const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t}
+const TX={
+ wall:(col,stripe)=>cvTex(256,256,(g,w,h)=>{g.fillStyle=col;g.fillRect(0,0,w,h);if(stripe){g.fillStyle="rgba(0,0,0,.06)";for(let x=0;x<w;x+=32)g.fillRect(x,0,10,h)}for(let i=0;i<900;i++){g.fillStyle=`rgba(0,0,0,${Math.random()*.04})`;g.fillRect(Math.random()*w,Math.random()*h,2,2)}}),
+ parquet:()=>cvTex(512,512,(g,w,h)=>{for(let y=0;y<h;y+=32)for(let x=(y/32%2)*48;x<w+96;x+=96){const l=110+Math.random()*30;g.fillStyle=`rgb(${l},${l*.72|0},${l*.45|0})`;g.fillRect(x-96,y,94,30)}}),
+ boards:()=>cvTex(512,512,(g,w,h)=>{for(let x=0;x<w;x+=40){const l=90+Math.random()*25;g.fillStyle=`rgb(${l},${l*.75|0},${l*.5|0})`;g.fillRect(x,0,38,h)}}),
+ tiles:()=>cvTex(256,256,(g,w,h)=>{for(let y=0;y<h;y+=32)for(let x=0;x<w;x+=32){g.fillStyle=(x+y)/32%2?"#8a3b2a":"#b9a98a";g.fillRect(x,y,31,31)}}),
+ ceil:(sky)=>cvTex(256,256,(g,w,h)=>{g.fillStyle="#d8d2c4";g.fillRect(0,0,w,h);if(sky){g.fillStyle="#f4efe2";g.fillRect(40,40,176,176);g.strokeStyle="#9a9382";g.lineWidth=3;for(let i=40;i<=216;i+=22){g.beginPath();g.moveTo(i,40);g.lineTo(i,216);g.stroke();g.beginPath();g.moveTo(40,i);g.lineTo(216,i);g.stroke()}}}),
+ wood:(c)=>cvTex(128,128,(g,w,h)=>{g.fillStyle=c||"#6b4a2b";g.fillRect(0,0,w,h);g.strokeStyle="rgba(0,0,0,.18)";for(let y=4;y<h;y+=7){g.beginPath();g.moveTo(0,y);g.bezierCurveTo(40,y+3,80,y-3,w,y+1);g.stroke()}}),
+ trunk:()=>cvTex(256,128,(g,w,h)=>{g.fillStyle="#5b3d22";g.fillRect(0,0,w,h);g.fillStyle="#2b2b2b";for(const x of [30,w-46])g.fillRect(x,0,16,h);g.fillRect(0,18,w,10);g.fillStyle="#b08a3a";g.fillRect(w/2-10,40,20,24)}),
+ cloth:(c)=>cvTex(64,64,(g,w,h)=>{g.fillStyle=c;g.fillRect(0,0,w,h);g.strokeStyle="rgba(0,0,0,.08)";for(let i=0;i<w;i+=4){g.beginPath();g.moveTo(i,0);g.lineTo(i,h);g.stroke()}}),
+ view:(kind)=>cvTex(512,384,(g,w,h)=>{const s=g.createLinearGradient(0,0,0,h);s.addColorStop(0,"#c9d3d8");s.addColorStop(1,"#efe7d6");g.fillStyle=s;g.fillRect(0,0,w,h);
+   if(kind==="florence"){g.fillStyle="#9a5a3a";for(let x=0;x<w;x+=46){const t=h*.62+Math.random()*30;g.fillRect(x,t,44,h-t);g.fillStyle="#7d4a30";g.beginPath();g.moveTo(x-4,t);g.lineTo(x+22,t-16);g.lineTo(x+48,t);g.fill();g.fillStyle="#9a5a3a"}
+     g.fillStyle="#a8603e";g.beginPath();g.ellipse(w*.6,h*.5,70,80,0,Math.PI,0);g.fill();g.fillRect(w*.6-75,h*.5,150,60);g.strokeStyle="#f1e8d8";g.lineWidth=3;for(let a=-60;a<=60;a+=30){g.beginPath();g.moveTo(w*.6+a,h*.5);g.quadraticCurveTo(w*.6+a*.4,h*.5-60,w*.6,h*.5-80);g.stroke()}g.fillStyle="#e8e0cf";g.fillRect(w*.6-8,h*.5-100,16,22)}
+   else{g.fillStyle="#6f6a66";for(let x=0;x<w;x+=60){const t=h*.5+Math.random()*50;g.fillRect(x,t,58,h-t);g.fillStyle="#57524f";g.fillRect(x+10,t-28,10,28);g.fillRect(x+34,t-20,8,20);g.fillStyle="#4a4643";g.beginPath();g.moveTo(x,t);g.lineTo(x+29,t-18);g.lineTo(x+58,t);g.fill();g.fillStyle="#6f6a66"}}}),
+ hooks:()=>cvTex(256,384,(g,w,h)=>{g.fillStyle="rgba(255,250,235,.55)";g.fillRect(14,14,w-28,h-28);g.strokeStyle="rgba(80,60,40,.35)";g.lineWidth=3;g.strokeRect(14,14,w-28,h-28);g.fillStyle="#2c2c2c";for(const [x,y] of [[40,30],[w-40,30],[40,h-30],[w-40,h-30]]){g.beginPath();g.arc(x,y,9,0,7);g.fill();g.fillRect(x-3,y,6,18)}}),
+ figure:(c)=>cvTex(128,256,(g,w,h)=>{g.fillStyle=c||"#2a2622";g.beginPath();g.arc(64,40,24,0,7);g.fill();g.beginPath();g.moveTo(26,80);g.quadraticCurveTo(64,58,102,80);g.lineTo(112,250);g.lineTo(16,250);g.fill()}),
+ smock:()=>cvTex(128,192,(g,w,h)=>{g.fillStyle="#efece4";g.beginPath();g.moveTo(40,10);g.lineTo(88,10);g.lineTo(122,60);g.lineTo(104,70);g.lineTo(100,186);g.lineTo(28,186);g.lineTo(24,70);g.lineTo(6,60);g.fill();g.strokeStyle="#bdb6a6";g.stroke()}),
+ paper:(lines)=>cvTex(256,320,(g,w,h)=>{g.fillStyle="#efe6cf";g.fillRect(0,0,w,h);g.fillStyle="#7a6a50";for(let y=40;y<h-20;y+=18)g.fillRect(20,y,lines?w-40-Math.random()*60:w-40,3)})
+};
+function Diorama(el,spec,onHot){
+  const W=el.clientWidth,H=el.clientHeight;const r=new THREE.WebGLRenderer({antialias:true});r.setPixelRatio(Math.min(2,devicePixelRatio||1));r.setSize(W,H);r.outputEncoding=THREE.sRGBEncoding;el.appendChild(r.domElement);
+  const sc=new THREE.Scene();sc.background=new THREE.Color("#1b1814");const cam=new THREE.PerspectiveCamera(72,W/H,.05,100);cam.position.set(0,1.6,0);
+  sc.add(new THREE.AmbientLight(0xffffff,.75));const dl=new THREE.DirectionalLight(0xfff1d6,.55);dl.position.set(2,5,3);sc.add(dl);
+  const {w,d,h}=spec;const M=(t,o={})=>new THREE.MeshLambertMaterial({map:t,...o});const loader=new THREE.TextureLoader();loader.setCrossOrigin("anonymous");
+  const plane=(pw,ph,mat)=>new THREE.Mesh(new THREE.PlaneGeometry(pw,ph),mat);
+  const wallT=TX.wall(spec.wall||"#b9a887",spec.stripe);wallT.wrapS=wallT.wrapT=THREE.RepeatWrapping;
+  const walls={n:[0,-d/2,0,w],s:[0,d/2,Math.PI,w],e:[w/2,0,-Math.PI/2,d],o:[-w/2,0,Math.PI/2,d]};
+  for(const k in walls){const [x,z,ry,len]=walls[k];const t=wallT.clone();t.needsUpdate=true;t.repeat.set(len/2,h/2);const m=plane(len,h,M(t));m.position.set(x,h/2,z);m.rotation.y=ry;sc.add(m)}
+  const ft={parquet:TX.parquet,boards:TX.boards,tiles:TX.tiles}[spec.floor||"boards"]();ft.wrapS=ft.wrapT=THREE.RepeatWrapping;ft.repeat.set(w/3,d/3);const fl=plane(w,d,M(ft));fl.rotation.x=-Math.PI/2;sc.add(fl);
+  const cl=plane(w,d,M(TX.ceil(spec.sky)));cl.rotation.x=Math.PI/2;cl.position.y=h;sc.add(cl);
+  /* точка на стене: wall, x вдоль стены (от центра), y — высота, отступ от стены */
+  const onWall=(wk,x,y,off=.02)=>{const [wx,wz,ry]=walls[wk];const o=new THREE.Object3D();o.rotation.y=ry;const dir=new THREE.Vector3(1,0,0).applyEuler(o.rotation),nrm=new THREE.Vector3(0,0,1).applyEuler(o.rotation);
+    return {p:new THREE.Vector3(wx,y,wz).addScaledVector(dir,x).addScaledVector(nrm,off),ry}};
+  const hots=[];
+  for(const it of spec.items||[]){let mesh;
+    if(it.t==="pic"||it.t==="win"||it.t==="hooks"||it.t==="smock"||it.t==="paper"||it.t==="door"){const q=onWall(it.wall,it.x,it.y,it.t==="win"?.01:.03);
+      if(it.t==="pic"||it.t==="win"){const fr=new THREE.Mesh(new THREE.BoxGeometry(it.w+.16,it.h+.16,.05),M(TX.wood(it.t==="win"?"#ddd5c2":"#a07a2c")));fr.position.copy(q.p);fr.rotation.y=q.ry;sc.add(fr)}
+      const tex=it.t==="pic"?loader.load(it.url,t=>{t.encoding=THREE.sRGBEncoding;t.needsUpdate=true}):it.t==="win"?TX.view(it.view):it.t==="hooks"?TX.hooks():it.t==="smock"?TX.smock():it.t==="paper"?TX.paper(true):TX.wood("#4a3626");
+      mesh=plane(it.w,it.h,M(tex,{transparent:it.t==="hooks"||it.t==="smock"}));const p2=onWall(it.wall,it.x,it.y,it.t==="win"?.04:.06);mesh.position.copy(p2.p);mesh.rotation.y=q.ry}
+    else if(it.t==="box"){const mats=it.tex==="trunk"?M(TX.trunk()):M(it.tex==="cloth"?TX.cloth(it.c||"#e8e2d4"):TX.wood(it.c));mesh=new THREE.Mesh(new THREE.BoxGeometry(...it.s),mats);mesh.position.set(it.p[0],it.p[1]+it.s[1]/2,it.p[2]);if(it.ry)mesh.rotation.y=it.ry}
+    else if(it.t==="fig"){mesh=new THREE.Sprite(new THREE.SpriteMaterial({map:TX.figure(it.c),transparent:true}));mesh.scale.set(.85,1.7,1);mesh.position.set(it.p[0],.85,it.p[1])}
+    else if(it.t==="flat"){mesh=plane(it.s[0],it.s[1],M(it.tex==="paper"?TX.paper(true):TX.cloth(it.c||"#7a1f1f")));mesh.rotation.x=-Math.PI/2;mesh.position.set(it.p[0],it.p[1],it.p[2]);if(it.ry)mesh.rotation.z=it.ry}
+    if(mesh)sc.add(mesh)}
+  /* метки улик */
+  const ring=cvTex(128,128,(g)=>{g.strokeStyle="#F0A63A";g.lineWidth=10;g.beginPath();g.arc(64,64,48,0,7);g.stroke();g.fillStyle="rgba(240,166,58,.35)";g.beginPath();g.arc(64,64,40,0,7);g.fill();g.fillStyle="#fff";g.font="bold 60px sans-serif";g.textAlign="center";g.textBaseline="middle";g.fillText("?",64,68)});
+  const ok=cvTex(128,128,(g)=>{g.fillStyle="rgba(76,175,80,.85)";g.beginPath();g.arc(64,64,46,0,7);g.fill();g.strokeStyle="#fff";g.lineWidth=12;g.beginPath();g.moveTo(38,66);g.lineTo(56,84);g.lineTo(92,44);g.stroke()});
+  for(const ht of spec.hots||[]){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:ring,depthTest:false,transparent:true}));s.position.set(...ht.p);s.scale.set(.32,.32,1);s.userData.id=ht.id;s.renderOrder=9;sc.add(s);hots.push(s)}
+  let lon=spec.look||0,lat=0,drag=null,raf=0,alive=true,dirty=true;
+  const look=()=>{lat=Math.max(-55,Math.min(55,lat));const phi=THREE.MathUtils.degToRad(90-lat),th=THREE.MathUtils.degToRad(lon);cam.lookAt(cam.position.x+Math.sin(phi)*Math.sin(th),cam.position.y+Math.cos(phi),cam.position.z-Math.sin(phi)*Math.cos(th))};
+  const cv=r.domElement;cv.style.touchAction="none";
+  cv.addEventListener("pointerdown",e=>{drag={x:e.clientX,y:e.clientY,lon,lat,moved:false};cv.setPointerCapture(e.pointerId)});
+  cv.addEventListener("pointermove",e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>5)drag.moved=true;lon=drag.lon-dx*.22;lat=drag.lat+dy*.18;dirty=true});
+  cv.addEventListener("pointerup",e=>{const was=drag;drag=null;if(was&&!was.moved){const rc=new THREE.Raycaster(),b=cv.getBoundingClientRect();rc.setFromCamera({x:(e.clientX-b.left)/b.width*2-1,y:-(e.clientY-b.top)/b.height*2+1},cam);
+    const hit=rc.intersectObjects(hots)[0];if(hit){hit.object.material=new THREE.SpriteMaterial({map:ok,depthTest:false,transparent:true});dirty=true;onHot(hit.object.userData.id)}}});
+  cv.addEventListener("wheel",e=>{e.preventDefault();cam.fov=Math.max(40,Math.min(85,cam.fov+e.deltaY*.04));cam.updateProjectionMatrix();dirty=true},{passive:false});
+  const ro=new ResizeObserver(()=>{const W2=el.clientWidth,H2=el.clientHeight;if(!W2||!H2)return;r.setSize(W2,H2);cam.aspect=W2/H2;cam.updateProjectionMatrix();dirty=true});ro.observe(el);
+  const loop=t=>{if(!alive)return;const k=1+Math.sin(t/300)*.12;for(const s of hots)s.scale.set(.32*k,.32*k,1);look();r.render(sc,cam);raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
+  return {mark(id){const s=hots.find(x=>x.userData.id===id);if(s)s.material=new THREE.SpriteMaterial({map:ok,depthTest:false,transparent:true})},turn(d){lon+=d},
+    clear(){alive=false;cancelAnimationFrame(raf);ro.disconnect();r.dispose();sc.traverse(o=>{o.geometry?.dispose();if(o.material){o.material.map?.dispose();o.material.dispose()}});cv.remove()}}
+}
+
+/* ---------- дело: «Улыбка пропала» (кража «Джоконды», 1911–1913) ---------- */
+const PAINT=[WM("thumb/e/e4/Leonardo_Da_Vinci_-_Vergine_delle_Rocce_(Louvre).jpg/960px-Leonardo_Da_Vinci_-_Vergine_delle_Rocce_(Louvre).jpg"),WM("thumb/4/4d/La_Belle_Ferronière_-_Google_Arts.jpg/960px-La_Belle_Ferronière_-_Google_Arts.jpg"),WM("thumb/f/f8/Sainte_Anne_Leonard.jpg/960px-Sainte_Anne_Leonard.jpg"),WM("thumb/9/94/Baldassare_Castiglione,_by_Raffaello_Sanzio,_from_C2RMF_retouched.jpg/960px-Baldassare_Castiglione,_by_Raffaello_Sanzio,_from_C2RMF_retouched.jpg"),WM("thumb/4/4d/Le_Concert_champêtre,_by_Titian,_from_C2RMF_retouchedFXD.jpg/960px-Le_Concert_champêtre,_by_Titian,_from_C2RMF_retouchedFXD.jpg"),WM("thumb/7/73/Tiziano_-_Hombre_del_guante_(Louvre).jpg/960px-Tiziano_-_Hombre_del_guante_(Louvre).jpg")];
+const CASEFILES=[{id:"mona",title:W("Улыбка пропала","The Vanished Smile"),moves:6,
+ cover:WM("1/19/Louis_Beroud_-_Mona_Lisa_au_Louvre_1911.jpg"),
+ brief:W("Вторник, 22 августа 1911 года. Художник пришёл в Лувр копировать «Джоконду» и увидел на стене четыре пустых крюка. Самая известная картина Лувра исчезла. Начальник полиции уверяет, что раскроет дело за два-три дня. Посмотрим.",
+   "Tuesday, 22 August 1911. A painter arrives at the Louvre to copy the Mona Lisa and finds four bare hooks on the wall. The Louvre's most famous painting is gone. The police chief promises to solve it in two or three days. We'll see."),
+ start:"louvre",
+ stops:{
+  louvre:{place:W("Лувр, Квадратный салон","The Louvre, Salon Carré"),when:W("22 августа 1911","22 August 1911"),
+   scene:{w:9,d:9,h:5.2,wall:"#8f2f2a",floor:"parquet",sky:true,look:0,items:[
+     {t:"hooks",wall:"n",x:0,y:1.9,w:.9,h:1.2},{t:"pic",wall:"n",x:-2.4,y:2,w:1.3,h:2,url:PAINT[0]},{t:"pic",wall:"n",x:2.4,y:2,w:1,h:1.4,url:PAINT[1]},
+     {t:"pic",wall:"o",x:0,y:2.1,w:1.5,h:2,url:PAINT[2]},{t:"pic",wall:"s",x:-1.8,y:2,w:1.1,h:1.4,url:PAINT[3]},{t:"pic",wall:"s",x:1.8,y:2,w:1.9,h:1.5,url:PAINT[4]},
+     {t:"door",wall:"e",x:2.2,y:1.3,w:1.2,h:2.6},{t:"pic",wall:"e",x:-1.8,y:2.1,w:1.1,h:1.3,url:PAINT[5]},
+     {t:"box",p:[0,0,1.2],s:[2.2,.45,.6],c:"#5a3d24"},{t:"box",p:[-3.2,0,-1.5],s:[1.3,.85,.7],c:"#6b4a2b"},{t:"paper",wall:"o",x:-2.6,y:1.0,w:.35,h:.45},
+     {t:"fig",p:[3.4,1.6],c:"#2f2a24"}]},
+   hots:[
+    {id:"hooks",p:[0,1.9,-4.3],text:W("Четыре железных крюка и светлый прямоугольник на стене. Картину сняли вчера, в понедельник: по понедельникам летом музей закрыт, внутри только рабочие.","Four iron hooks and a pale rectangle on the wall. The painting was taken yesterday, a Monday: in summer the museum is shut on Mondays and only workers are inside.")},
+    {id:"stairs",p:[4.3,1.6,2.2],text:W("Служебная лестница. На площадке нашли брошенную раму и защитное стекло. На стекле — чёткий отпечаток большого пальца.","The service stairway. The abandoned frame and protective glass were found on the landing. On the glass: a clear thumbprint.")},
+    {id:"plumber",p:[3.4,1.75,1.6],text:W("Водопроводчик: «Утром у служебной двери стоял человек в белом рабочем халате. Дверь была заперта, я открыл ему. Думал, кто-то из наших».","The plumber: “That morning a man in a white work smock was standing at the service door. It was locked, so I let him out. I thought he was one of us.”")},
+    {id:"list",p:[-3.2,1.1,-1.5],text:W("Хранитель составил список всех, кто работал с картиной. Стеклянный короб для «Джоконды» месяц назад делали нанятые стекольщики, среди них итальянцы. Один уже уволился.","The curator has listed everyone who handled the painting. Hired glaziers built the Mona Lisa's glass case a few months ago, some of them Italian. One has since left.")}],
+   ask:W("Куда направить расследование?","Where do you take the investigation?"),
+   opts:[
+    {to:"room",label:W("Квартиры рабочих-стекольщиков, Париж","The hired glaziers' lodgings, Paris"),hot:W("Горячо! Один из бывших стекольщиков Лувра живёт в съёмной комнате на улице Опиталь-Сен-Луи. В полицейском досье он уже есть.","Hot! One of the Louvre's former glaziers rents a room on rue de l'Hôpital-Saint-Louis. He is already in police files.")},
+    {dead:W("Холодно. Пикассо и поэта Аполлинера действительно задержали, но за другую историю: секретарь Аполлинера когда-то вынес из Лувра древние иберийские статуэтки, и две из них купил Пикассо. «Джоконды» здесь нет.","Cold. Picasso and the poet Apollinaire really were taken in, but over another affair: Apollinaire's secretary had once walked out of the Louvre with ancient Iberian statuettes, and Picasso had bought two. No Mona Lisa here."),
+     label:W("Мастерская на Монмартре: молодой художник-авангардист","A Montmartre studio: a young avant-garde painter"),img:WM("1/13/Pablo_Picasso,_1904,_Paris,_photograph_by_Ricard_Canals_i_Llambí.jpg")},
+    {dead:W("Холодно. Полиция и правда обыскала всех пассажиров лайнера, а в Нью-Йорке — ещё один корабль. Пусто: картина не покидала Францию.","Cold. The police really did search every passenger on an ocean liner, and another ship in New York. Nothing: the painting never left France."),label:W("Порт: лайнер в Нью-Йорк, обыск пассажиров","The docks: a liner to New York, search the passengers")},
+    {dead:W("Холодно. Всех постоянных сотрудников Лувра допросили и сняли у них отпечатки пальцев. Совпадений нет.","Cold. Every permanent Louvre employee was questioned and fingerprinted. No match."),label:W("Повторный допрос служащих музея","Question the museum staff again")}]},
+  room:{place:W("Париж, комната стекольщика","Paris, a glazier's room"),when:W("1911–1913","1911–1913"),
+   scene:{w:4.2,d:4.6,h:3,wall:"#b9ab8c",stripe:true,floor:"boards",look:-30,items:[
+     {t:"win",wall:"n",x:.4,y:1.7,w:1.3,h:1.4,view:"paris"},{t:"box",p:[.4,0,-1.85],s:[1.2,.6,.6],tex:"trunk"},
+     {t:"box",p:[-1.3,0,-.4],s:[.9,.55,1.9],tex:"cloth",c:"#e6e0d2"},{t:"flat",p:[-1.3,.57,-.2],s:[.5,.35],tex:"paper",ry:.3},
+     {t:"box",p:[1.4,0,.9],s:[1,.75,.7],c:"#7a5534"},{t:"flat",p:[1.4,.77,.9],s:[.3,.4],tex:"paper",ry:-.2},
+     {t:"smock",wall:"s",x:-1,y:1.6,w:.7,h:1.05},{t:"door",wall:"s",x:1,y:1.05,w:.9,h:2.1}]},
+   hots:[
+    {id:"table",p:[1.4,1.05,.9],text:W("На этом столе в 1911 году инспектор писал протокол, опираясь на столешницу. Он поверил хозяину и ушёл. Картина лежала в тайнике прямо под столом.","In 1911 an inspector wrote up his report leaning on this very table. He believed the tenant and left. The painting was hidden in a cavity right under it.")},
+    {id:"trunk",p:[.4,.9,-1.85],text:W("Тяжёлый деревянный сундук. Хозяин держит его закрытым и никого к нему не подпускает.","A heavy wooden trunk. The tenant keeps it locked and lets no one near it.")},
+    {id:"smock",p:[1,1.7,2.1],text:W("Белый рабочий халат — точно такой носят рабочие Лувра.","A white work smock, exactly like the ones Louvre workers wear.")},
+    {id:"paper",p:[-1.3,.85,-.2],text:W("Итальянская газета, 1913 год. Флорентийский антиквар даёт объявление: «Покупаю произведения искусства, хорошая цена».","An Italian newspaper from 1913. A Florentine antiques dealer advertises: “Works of art bought, good prices.”")},
+    {id:"letter",p:[-.4,1.05,-2.2],text:W("Письмо отцу, декабрь 1911: «Здесь, в Париже, я сделаю своё состояние, и оно придёт одним выстрелом».","A letter to his father, December 1911: “Here in Paris I will make my fortune, and it will come in one shot.”")}],
+   ask:W("Прошло два года. Куда он повезёт картину?","Two years pass. Where will he take the painting?"),
+   opts:[
+    {dead:W("Тепло, но мимо. Он и правда пытался продать картину в Лондоне, но торговец Джозеф Дювин просто высмеял его. Картину увезли не сюда.","Warm, but no. He really did try to sell it in London, but the dealer Joseph Duveen simply laughed at him. The painting went elsewhere."),label:W("Лондон, торговец старыми мастерами","London, an Old Masters dealer")},
+    {to:"florence",label:W("Флоренция, Италия","Florence, Italy"),hot:W("Горячо! Человек с сундуком сел на поезд до Италии. Флорентийский антиквар получил письмо, подписанное «Леонардо V.».","Hot! A man with a trunk has taken the train to Italy. A Florentine dealer has received a letter signed “Leonardo V.”")},
+    {dead:W("Холодно. Газеты гадали о богатом заказчике из-за океана, но доказательств так и не нашли.","Cold. Newspapers speculated about a rich buyer across the ocean, but no evidence ever turned up."),label:W("Нью-Йорк, коллекционер-миллионер","New York, a millionaire collector")},
+    {dead:W("Холодно. В Риме картину увидят, но позже, когда её повезут по Италии после находки.","Cold. Rome will see the painting, but only later, when it tours Italy after being found."),label:W("Рим","Rome")}]},
+  florence:{place:W("Флоренция, гостиница «Триполи-Италия»","Florence, the Tripoli-Italia hotel"),when:W("декабрь 1913","December 1913"),
+   scene:{w:4.6,d:4.8,h:3.4,wall:"#cdbf9f",floor:"tiles",look:20,items:[
+     {t:"win",wall:"n",x:-.6,y:1.8,w:1.4,h:1.6,view:"florence"},{t:"box",p:[1.3,0,-1.5],s:[1.1,.5,.7],tex:"trunk"},{t:"flat",p:[1.3,.52,-1.5],s:[.9,.5],c:"#7a1f1f"},
+     {t:"box",p:[-1.5,0,.6],s:[1.3,.6,2],tex:"cloth",c:"#ece6d8"},{t:"box",p:[1.6,0,1],s:[1,.78,.6],c:"#6b4a2b"},{t:"flat",p:[1.6,.8,1],s:[.3,.42],tex:"paper",ry:.15},
+     {t:"box",p:[-1.9,0,-1.9],s:[.9,2.2,.6],c:"#4f3520"},{t:"fig",p:[.2,2.1],c:"#2f2a24"},{t:"door",wall:"s",x:-.9,y:1.1,w:.95,h:2.2}]},
+   hots:[
+    {id:"letter",p:[1.6,1.05,1],text:W("Черновик письма антиквару Альфредо Джери. Подпись: «Леонардо V.». Автор предлагает «вернуть картину Италии» — за вознаграждение.","A draft letter to the dealer Alfredo Geri, signed “Leonardo V.”. The writer offers to “return the painting to Italy” for a reward.")},
+    {id:"trunk",p:[1.3,.8,-1.5],text:W("Сундук с двойным дном. Под рубашками и бельём — деревянная доска, завёрнутая в красный шёлк.","A trunk with a false bottom. Under the shirts and underwear: a wooden panel wrapped in red silk.")},
+    {id:"porter",p:[.2,1.8,2.1],text:W("Портье: «Постоялец приехал поездом из Парижа. Итальянец, невысокий, говорит, что стекольщик и маляр».","The porter: “The guest came by train from Paris. Italian, short, says he's a glazier and decorator.”")},
+    {id:"window",p:[-.6,2.2,-2.3],text:W("Из окна виден купол собора. До галереи Уффици несколько минут пешком.","The cathedral dome is visible from the window. The Uffizi Gallery is a few minutes' walk away.")}],
+   ask:null}},
+ suspects:[
+  {name:W("Пабло Пикассо","Pablo Picasso"),line:W("Художник, испанец, 29 лет. Задерживался по делу об украденных статуэтках.","Painter, Spanish, 29. Questioned over the stolen statuettes."),img:WM("1/13/Pablo_Picasso,_1904,_Paris,_photograph_by_Ricard_Canals_i_Llambí.jpg"),cr:"Ricard Canals, 1904"},
+  {name:W("Гийом Аполлинер","Guillaume Apollinaire"),line:W("Поэт, 31 год. Провёл несколько дней в тюрьме Санте.","Poet, 31. Spent several days in La Santé prison."),img:WM("thumb/6/68/Guillaume_Apollinaire_foto.jpg/960px-Guillaume_Apollinaire_foto.jpg"),cr:"photo, 1916"},
+  {name:W("Винченцо Перуджа","Vincenzo Peruggia"),line:W("Маляр-декоратор, итальянец, рост 160 см. В 1909 году уже попадал в полицию.","Decorator, Italian, 160 cm tall. Already had a police record from 1909."),img:WM("a/ab/Vincenzo_peruggia.jpg"),cr:"police photo, 1909",guilty:true}],
+ truth:[
+  {img:WM("f/f8/Mona_Lisa_stolen-1911.jpg"),t:W("Толпы приходили в Лувр, чтобы просто посмотреть на пустое место на стене.","Crowds came to the Louvre just to stare at the empty space on the wall.")},
+  {img:WM("a/ab/Vincenzo_peruggia.jpg"),t:W("Фото и отпечатки Перуджи лежали в полицейской картотеке с 1909 года, но отпечаток со стекла с ними так и не сверили.","Peruggia's photo and prints had been in police files since 1909, but no one checked the thumbprint on the glass against them.")},
+  {img:WM("thumb/9/93/Monalisa_uffizi_1913.jpg/960px-Monalisa_uffizi_1913.jpg"),t:W("Декабрь 1913: директор Уффици Джованни Поджи проверяет картину. Перуджу арестовали в гостинице. Во Флоренции 30 тысяч человек прорвались сквозь полицию, чтобы её увидеть.","December 1913: Uffizi director Giovanni Poggi examines the painting. Peruggia was arrested at his hotel. In Florence 30,000 people swept past the police to see it.")},
+  {img:WM("thumb/d/d1/Two_men_carry_the_Mona_Lisa_back_to_the_Louvre_in_January_1914.jpg/960px-Two_men_carry_the_Mona_Lisa_back_to_the_Louvre_in_January_1914.jpg"),t:W("4 января 1914 года «Джоконда» вернулась в Лувр. До кражи её знали ценители, после — весь мир. Перуджу осудили на год и 15 дней, отсидел он семь месяцев.","On 4 January 1914 the Mona Lisa returned to the Louvre. Before the theft connoisseurs knew it; after it, the whole world did. Peruggia got a year and 15 days and served seven months.")}]
+}];
+const CaseGame={
+ title:()=>L("Дело","Case Files"),
+ start(el){this.el=el;this.c=CASEFILES[0];this.s={at:this.c.start,moves:this.c.moves,found:{},wrong:0,tried:{},log:[]};this.intro()},
+ head(){const s=this.s;return gameHead(this.title(),`<span class="chip">${L("Ходы","Moves")}: ${s.moves}</span><span class="chip a">${L("Улики","Clues")}: ${Object.keys(s.found).length}</span>`)},
+ intro(){const c=this.c;this.el.innerHTML=`<div class="col">${gameHead(this.title())}<div class="intro"><img src="${c.cover}" alt=""></div>
+   <section class="card"><div class="label">${L("По реальному делу","Based on a real case")} · 1911–1913</div><h2 class="ctitle">${tr(c.title)}</h2><p class="story">${tr(c.brief)}</p>
+   <ul class="ticks small"><li>${L("Осматривайте место: крутите сцену и нажимайте на метки ?","Search each scene: turn around and tap the ? markers")}</li><li>${L("Выберите, куда ехать дальше. Каждый ложный след сжигает ход","Pick where to go next. Every false lead burns a move")}</li><li>${L(`У вас ${c.moves} ходов. В конце арестуйте того, на кого указывают улики`,`You have ${c.moves} moves. At the end, arrest the person the clues point to`)}</li></ul>
+   <button class="go" id="go">${L("Взять дело","Take the case")}</button><p class="small muted">${L("Сцены — 3D-реконструкции. Картины на стенах и фотографии участников настоящие.","Scenes are 3D reconstructions. The paintings on the walls and the photos of the people are real.")}</p></section></div>`;
+   $("#go").onclick=()=>{CAP.track("case_start","case");this.stop()}},
+ stop(){scrollTo(0,0);const s=this.s,st=this.c.stops[s.at];const n=st.hots.length,f=st.hots.filter(h=>s.found[s.at+":"+h.id]).length;
+   this.el.innerHTML=`<div class="col">${this.head()}<div class="cplace"><b>${tr(st.place)}</b><span class="mono">${tr(st.when)}</span></div>
+   <div class="dio" id="dio"><span class="tagx dtag">${L("3D · крутите сцену","3D · drag to look around")}</span><span class="tagx dcount">${L("Улики","Clues")} ${f}/${n}</span></div>
+   <div class="clues" id="clues">${st.hots.filter(h=>s.found[s.at+":"+h.id]).map(h=>`<div class="fact">${esc(tr(h.text))}</div>`).join("")||`<p class="small muted">${L("Найдите хотя бы две улики, чтобы двигаться дальше.","Find at least two clues to move on.")}</p>`}</div>
+   <div class="actbar"><button class="go" id="onw" ${f<2?"disabled":""}>${st.ask?L("Куда дальше?","Where next?"):L("К аресту","Make the arrest")}</button></div></div>`;
+   const box=$("#dio");CURV?.clear();let dio=null;try{dio=Diorama(box,{...st.scene,hots:st.hots},id=>this.hot(id))}catch(e){box.insertAdjacentHTML("beforeend",`<p class="small">${L("3D недоступно на этом устройстве","3D isn't available on this device")}</p>`)}
+   CURV={clear(){dio?.clear()}};if(dio)for(const h of st.hots)if(s.found[s.at+":"+h.id])dio.mark(h.id);
+   $("#onw").onclick=()=>st.ask?this.choose():this.finale()},
+ hot(id){const s=this.s,st=this.c.stops[s.at],k=s.at+":"+id;if(s.found[k])return;s.found[k]=1;const h=st.hots.find(x=>x.id===id);
+   const cl=$("#clues");if(cl){if(!cl.querySelector(".fact"))cl.innerHTML="";cl.insertAdjacentHTML("afterbegin",`<div class="fact new">${esc(tr(h.text))}</div>`)}
+   const f=st.hots.filter(x=>s.found[s.at+":"+x.id]).length;const dc=document.querySelector(".dcount");if(dc)dc.textContent=`${L("Улики","Clues")} ${f}/${st.hots.length}`;
+   const hc=this.el.querySelector(".hud .chip.a");if(hc)hc.textContent=`${L("Улики","Clues")}: ${Object.keys(s.found).length}`;if(f>=2)$("#onw").disabled=false;navigator.vibrate?.(10)},
+ choose(msg){scrollTo(0,0);const s=this.s,st=this.c.stops[s.at];
+   this.el.innerHTML=`<div class="col">${this.head()}${msg||""}<section class="card"><div class="label">${tr(st.place)}</div><h3>${tr(st.ask)}</h3>
+   <div class="leads">${st.opts.map((o,i)=>`<button class="lead${s.tried[s.at+i]?" used":""}" data-i="${i}" ${s.tried[s.at+i]?"disabled":""}>${tr(o.label)}</button>`).join("")}</div>
+   <p class="small muted">${L("Неверный след стоит одного хода.","A wrong lead costs one move.")}</p></section></div>`;
+   this.el.querySelectorAll(".lead").forEach(b=>b.onclick=()=>this.pick(+b.dataset.i))},
+ pick(i){const s=this.s,st=this.c.stops[s.at],o=st.opts[i];s.tried[s.at+i]=1;
+   if(o.to){s.log.push("🟩");const hot=tr(o.hot);s.at=o.to;this.arrive(hot);return}
+   s.moves--;s.wrong++;s.log.push("🟥");if(s.moves<=0){this.end(false,L("Ходы кончились. След остыл, и вор ушёл.","You're out of moves. The trail went cold and the thief got away."));return}
+   this.choose(`<section class="card cold">${o.img?`<img class="leadimg" src="${o.img}" alt="">`:""}<div class="verdict"><span class="chip r">${L("Холодно","Cold")} · −1 ${L("ход","move")}</span></div><p>${esc(tr(o.dead))}</p></section>`)},
+ arrive(hot){this.stop();const c=this.el.querySelector(".cplace");if(c)c.insertAdjacentHTML("afterend",`<section class="card hotc">${esc(hot)}</section>`)},
+ finale(){scrollTo(0,0);const c=this.c;this.el.innerHTML=`<div class="col">${this.head()}<section class="card"><div class="label">${L("Финал","Showdown")}</div><h3>${L("Кого арестовать?","Who do you arrest?")}</h3>
+   <div class="suspects">${c.suspects.map((p,i)=>`<button class="susp" data-i="${i}"><img src="${p.img}" alt=""><b>${tr(p.name)}</b><span class="small">${tr(p.line)}</span><span class="credit">${p.cr}</span></button>`).join("")}</div></section></div>`;
+   this.el.querySelectorAll(".susp").forEach(b=>b.onclick=()=>{const p=c.suspects[+b.dataset.i];this.s.log.push(p.guilty?"👤✅":"👤❌");p.guilty?this.end(true):this.end(false,L(`Вы арестовали не того: ${tr(p.name)} ни при чём. Настоящий вор успел скрыться.`,`Wrong person: ${tr(p.name)} had nothing to do with it. The real thief slipped away.`))})},
+ end(won,why){scrollTo(0,0);const s=this.s,c=this.c;const clues=Object.keys(s.found).length;const pts=won?Math.min(10000,3000+s.moves*1000+clues*250):clues*100;
+   const st=logGame("case",pts);const grid=s.log.join("");const share=`🕵️ Erascope · ${tr(c.title)}\n${won?L(`Пойман, осталось ходов: ${s.moves}`,`Caught with ${s.moves} moves to spare`):L("Вор ушёл","The thief got away")}\n${grid}`;
+   this.el.innerHTML=`<div class="col">${gameHead(this.title())}<section class="card final"><div class="label">${tr(c.title)}</div><div class="total">${won?L("Пойман!","Caught!"):L("Ушёл","Got away")}</div>
+   <div class="muted">${ru(pts)} ${L("очков","pts")} · ${L("улик","clues")} ${clues} · ${L("ложных следов","false leads")} ${s.wrong}</div><div class="grid">${grid}</div>${why?`<p>${esc(why)}</p>`:""}
+   ${hiBlock(st,pts,[],"")}<div class="btns"><button id="copy">${L("Поделиться","Share")}</button><button class="go" id="again">${L("Сыграть заново","Play again")}</button></div><div class="toast" id="toast"></div></section>
+   <section class="card"><div class="label">${L("Как было на самом деле","What really happened")}</div><div class="truth">${c.truth.map(x=>`<figure><img src="${x.img}" alt="" loading="lazy"><figcaption>${esc(tr(x.t))}</figcaption></figure>`).join("")}</div>
+   <p class="small muted">${L("Фото: Wikimedia Commons, общественное достояние. Реплики свидетелей и сцены — реконструкция по материалам дела.","Photos: Wikimedia Commons, public domain. Witness lines and scenes are reconstructions based on the case record.")}</p></section>
+   <section class="card"><div class="label">${L("Скоро","Coming next")}</div><p class="small">${L("Следующие дела: Тифлисское ограбление 1907 года и побег Ронни Биггса 1963–1970.","Next cases: the Tiflis bank robbery of 1907 and Ronnie Biggs's escape, 1963–1970.")}</p></section></div>`;
+   $("#again").onclick=()=>this.start(this.el);$("#copy").onclick=()=>copyText(share,$("#toast"))}
+};
+
 /* ================= хаб ================= */
 const GAMES=[
  {id:"where",title:()=>L("Где и когда","Where & When"),desc:W("Рассмотрите фотографию или панораму. Отметьте место на карте и угадайте год съёмки.","Study a photo or a panorama. Mark the place on the map and guess the year it was taken."),meta:W("5 кадров · ~4 мин","5 shots · ~4 min"),tag:W("Вызов дня","Daily"),img:"q21",run:WhereGame},
@@ -1909,13 +2095,14 @@ const GAMES=[
  {id:"price",title:()=>PriceGame.title(),desc:W("Перед вами предмет, страна и год. Угадайте, сколько он тогда стоил, в валюте того времени.","An item, a country and a year. Guess what it cost back then, in the money of the day."),meta:W("10 вещей · ~3 мин","10 items · ~3 min"),tag:W("Цены","Prices"),img:"mac",run:PriceGame},
  {id:"travel",title:()=>TravelGame.title(),desc:W("Вам известны предмет, страна и цена. Определите год и сохраните заряд машины времени.","You know the item, the country and the price. Work out the year and keep the time machine charged."),meta:W("8 прыжков · ~3 мин","8 jumps · ~3 min"),tag:W("Годы","Years"),img:"g4",run:TravelGame},
  {id:"timeline",title:()=>TimelineGame.title(),desc:W("Расположите вещи от самой ранней к самой поздней по году выхода в продажу.","Put the exhibits in order, from earliest to latest release."),meta:W("3 зала · ~2 мин","3 rooms · ~2 min"),tag:W("Логика","Logic"),img:"cover_timeline",run:TimelineGame},
+ {id:"case",title:()=>CaseGame.title(),desc:W("Погоня по реальному делу: осматривайте 3D-сцены, собирайте улики и выберите, кого арестовать. Первое дело — кража «Джоконды», 1911 год.","Chase a real case: search 3D scenes, gather clues and choose whom to arrest. First case: the theft of the Mona Lisa, 1911."),meta:W("Реальное дело · ~6 мин","Real case · ~6 min"),tag:W("Новое","New"),img:WM("1/19/Louis_Beroud_-_Mona_Lisa_au_Louvre_1911.jpg"),run:CaseGame},
  {id:"bag",title:()=>BagGame.title(),desc:W("Выберите покупки со скрытыми ценами. Побеждает тот, кто ближе всех к бюджету, не превышая его. Играйте по очереди на одном телефоне.","Pick shopping with hidden prices. Closest to the budget without going over wins. Take turns on one phone."),meta:W("2–6 игроков · ~10 мин","2–6 players · ~10 min"),tag:W("Для компании","Party"),img:"cover_bag",run:BagGame}
 ];
 const ALL_GAMES=GAMES;
 /* на главной: вызов дня + две постоянные игры + «режим недели», который меняется по понедельникам */
 const CORE=["where","price","timeline"],ROT=["agent","travel","bag"];
 const weekMode=()=>ROT[Math.floor((dayIdx()+3)/7)%ROT.length];
-function homeGames(){const w=weekMode();return [...CORE.map(id=>GAMES.find(g=>g.id===id)),{...GAMES.find(g=>g.id===w),week:true}]}
+function homeGames(){const w=weekMode();const g=id=>GAMES.find(x=>x.id===id);return [g("where"),{...g("case"),big:true},g("price"),g("timeline"),{...g(w),week:true}]}
 function accuracy(g){return g.n?Math.round((g.hit+g.close)/g.n*100):0}
 function hub(el){const s=stats(),lv=levelOf(s.xp||0),daily=store.get("daily_"+dayIdx(),null);const plays=Object.values(s.games).reduce((a,x)=>a+x.plays,0);
   const eras=[[6,"2013","Гонконг","Hong Kong"],[34,"1971","Париж","Paris"],[57,"1957","Лондон","London"],[84,L("80 н. э.","80 AD"),"Рим","Rome"]];
@@ -1928,7 +2115,7 @@ function hub(el){const s=stats(),lv=levelOf(s.xp||0),daily=store.get("daily_"+da
         :`<a class="btn go" href="#where" id="playDaily">${L("Играть вызов дня","Play daily")} #${dayNo()}</a>${dStreak()?`<span class="dailydone">🔥 ${dStreak()} · ${L("не прервите серию","keep your streak going")}</span>`:`<a class="btn ghost-l" href="#games" id="toGames">${L("Все игры","All games")} ↓</a>`}`}</div></div>
     <div class="eras" aria-hidden="true">${eras.map(([x,y,r,e])=>`<span style="left:${x}%"><b>${y}</b>${L(r,e)}</span>`).join("")}</div></section>
   <div class="sectionhead" id="games"><h2>${L("Игры","Games")}</h2><span class="muted small">${L("Все бесплатно","All free")}</span></div>
-  <div class="games g6">${homeGames().map((x,i)=>`<a class="gcard${i===0?" big":""}${x.week?" week":""}" href="#${x.id}"><span class="pic"><img src="${photo(x.img)}" alt="" loading="${i<2?"eager":"lazy"}"><span class="badges"><span class="badge${i===0||x.week?" a":""}">${x.week?L("Режим недели","Mode of the week"):tr(x.tag)}</span>${s.games[x.id]?`<span class="badge">${L("Рекорд","Best")} ${ru(s.games[x.id].best)}</span>`:""}</span></span>
+  <div class="games g6">${homeGames().map((x,i)=>`<a class="gcard${i===0||x.big?" big":""}${x.week?" week":""}" href="#${x.id}"><span class="pic"><img src="${photo(x.img)}" alt="" loading="${i<2?"eager":"lazy"}"><span class="badges"><span class="badge${i===0||x.week?" a":""}">${x.week?L("Режим недели","Mode of the week"):tr(x.tag)}</span>${s.games[x.id]?`<span class="badge">${L("Рекорд","Best")} ${ru(s.games[x.id].best)}</span>`:""}</span></span>
     <div class="body"><h3>${x.title()}</h3><p>${tr(x.desc)}</p><span class="meta mono">${tr(x.meta)}</span></div></a>`).join("")}</div>
   ${plays?`<section class="me-strip">
     <div><span class="label">${L("Уровень","Level")} ${lv.n}</span><b>${lv.title}</b><div class="xp"><i style="width:${lv.pct}%"></i></div></div>
@@ -1947,7 +2134,7 @@ function proModal(){const r=$("#modalRoot");r.innerHTML=`<div class="modal" id="
   <p class="small muted">${L("Это макет. Оплата в прототипе не подключена.","This is a mock-up. Payments aren't connected in the prototype.")}</p><button class="go" id="closeM">${L("Понятно","Got it")}</button></section></div>`;
   const close=()=>r.innerHTML="";$("#closeM").onclick=close;$("#mod").onclick=e=>{if(e.target.id==="mod")close()};$("#closeM").focus()}
 /* ================= уровни ================= */
-const XP_RATE={price:0.02,travel:0.05,agent:0.006,where:0.003,timeline:0.08,bag:0.05};
+const XP_RATE={case:0.03,price:0.02,travel:0.05,agent:0.006,where:0.003,timeline:0.08,bag:0.05};
 const LEVELS=[[0,W("Турист","Tourist")],[300,W("Путешественник","Traveller")],[800,W("Знаток","Connoisseur")],[1600,W("Эксперт","Expert")],[3000,W("Архивариус","Archivist")],[5000,W("Хранитель времени","Keeper of Time")],[8000,W("Легенда","Legend")]];
 function levelOf(xp){let i=0;while(i+1<LEVELS.length&&xp>=LEVELS[i+1][0])i++;const cur=LEVELS[i],next=LEVELS[i+1];
   return {n:i+1,title:tr(cur[1]),from:cur[0],to:next?next[0]:null,pct:next?Math.round((xp-cur[0])/(next[0]-cur[0])*100):100}}
