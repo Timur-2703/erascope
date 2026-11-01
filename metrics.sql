@@ -26,3 +26,15 @@ select round(avg(n),2) as games_per_player_day from (select uid, day, count(*) n
 
 -- 5. Свежие отзывы
 select created_at, screen, lang, text from feedback order by created_at desc limit 50;
+
+-- Заходы на сайт по дням и источникам (value: 1 = новый игрок, 0 = вернувшийся)
+select day, game as source, count(*) as visits, sum(value) as new_players
+from events where name='visit' group by 1,2 order by 1 desc, 3 desc;
+
+-- Воронка за день: заходы → запуски игр → завершения
+select day,
+  count(*) filter (where name='visit') as visits,
+  count(*) filter (where name='start') as starts,
+  count(*) filter (where name='finish') as finishes,
+  count(*) filter (where name='share') as shares
+from events group by 1 order by 1 desc;

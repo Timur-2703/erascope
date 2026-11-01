@@ -2222,6 +2222,13 @@ function snap(v,m=new WeakMap()){if(v===null||typeof v!=="object")return v;if(m.
       const before=this.el&&this.el.firstElementChild;DEPTH++;let r;try{r=f.apply(this,args)}finally{DEPTH--}
       if(this.el&&this.el.isConnected&&this.el.firstElementChild!==before)LASTSHOT={g:this,k,args,st,view:VIEW};return r}}}})();
 document.documentElement.lang=LANG;route();CAP.init();
+/* заход на сайт: один раз за сессию, только источник (reddit, itch, telegram…) и новый/вернувшийся игрок, без личных данных */
+(()=>{try{if(sessionStorage.getItem("pk_v"))return;sessionStorage.setItem("pk_v","1")}catch(e){}
+  const q=new URLSearchParams(location.search),u=(q.get("utm_source")||q.get("s")||"").toLowerCase().slice(0,20);let src=u;
+  if(!src){const h=location.hostname;let r="";try{r=document.referrer?new URL(document.referrer).hostname:""}catch(e){}
+    src=/itch\.(io|zone)/.test(h+" "+r)?"itch":/reddit/.test(r)?"reddit":/t\.me|telegram/.test(r)?"telegram":/google/.test(r)?"google":/instagram/.test(r)?"instagram":/threads/.test(r)?"threads":/facebook|fb\./.test(r)?"facebook":/(^|\.)x\.com|twitter|t\.co$/.test(r)?"x":/vk\.com/.test(r)?"vk":r&&r!==h?"other:"+r.slice(0,30):"direct"}
+  let isNew=1;try{isNew=localStorage.getItem("pk_seen")?0:1;localStorage.setItem("pk_seen","1")}catch(e){}
+  CAP.track("visit",src,isNew)})();
 </script>
 
 </body>
