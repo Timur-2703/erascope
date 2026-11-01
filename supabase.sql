@@ -39,7 +39,7 @@ grant usage on sequence public.feedback_id_seq to authenticated;
 create table if not exists public.events (
   id bigserial primary key,
   uid uuid default auth.uid(),
-  name text not null check (name in ('start','finish','share')),
+  name text not null check (name in ('start','finish','share','visit','daily_done','case_start')),
   game text check (char_length(game) <= 20),
   value integer,
   day integer,
@@ -50,3 +50,7 @@ alter table public.events enable row level security;
 create policy "Players log their own events" on public.events for insert to authenticated with check (uid = auth.uid());
 grant insert on public.events to authenticated;
 grant usage on sequence public.events_id_seq to authenticated;
+
+-- 2026-11-01: разрешили новые события (заходы, ежедневный вызов, старт дела)
+alter table public.events drop constraint if exists events_name_check;
+alter table public.events add constraint events_name_check check (name in ('start','finish','share','visit','daily_done','case_start'));
