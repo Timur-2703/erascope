@@ -187,6 +187,7 @@ details.brief summary::after{content:" ▾";color:var(--muted)}details.brief:not
 .hint{text-align:center;font-size:12px;color:var(--muted);margin-top:-6px}
 input[type=range]{width:100%;accent-color:var(--amber);height:28px}
 .scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.tlcats{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px}.tlc{cursor:pointer;font-size:14px;padding:7px 11px}.tlc small{opacity:.6;margin-left:4px}.tlc.on{background:var(--amber);color:#111;border-color:var(--amber)}
 .row4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.row6{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.row6 button{padding:8px 0;font-family:var(--mono);font-size:13px}
 .yscale{position:relative;height:30px;margin:2px 8px 8px}.yscale button{position:absolute;top:0;transform:translateX(-50%);background:none;border:0;padding:4px 2px;font:11px var(--mono);color:var(--muted);text-transform:none;letter-spacing:0;white-space:nowrap}.yscale button:first-child{transform:none;left:-8px!important}.yscale button:last-child{transform:translateX(-100%);left:calc(100% + 8px)!important}.yscale button:hover{color:var(--amber)}
 .row4 button{padding:8px 2px;font-family:var(--mono)}
@@ -720,7 +721,51 @@ const ITEMS=[
  {id:"minimoog",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Minimoog_%40_Moogseum,_NAMM_2010.jpg/960px-Minimoog_%40_Moogseum,_NAMM_2010.jpg",name:W("Minimoog","Minimoog"),detail:W("Компактный синтезатор Model D","The compact Model D synthesizer"),place:P.usa,year:1970,cur:"USD",price:1495,cr:"Vincent Liu, CC BY 2.0",
   fact:W("Первый компактный синтезатор: его можно было взять с собой на сцену.","The first compact synthesizer, small enough to take on stage.")},
  {id:"hp35",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/HP_35_Calculator.jpg/960px-HP_35_Calculator.jpg",name:W("HP-35","HP-35"),detail:W("Первый карманный научный калькулятор","The first pocket scientific calculator"),place:P.usa,year:1972,cur:"USD",price:395,cr:"Seth Morabito, CC BY 2.0",
-  fact:W("Он считал синусы и логарифмы, а раньше для этого брали логарифмическую линейку.","It computed sines and logarithms, jobs people had done with a slide rule.")}
+  fact:W("Он считал синусы и логарифмы, а раньше для этого брали логарифмическую линейку.","It computed sines and logarithms, jobs people had done with a slide rule.")},
+ {id:"frank",cat:"books",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Frankenstein_1818_edition_title_page.jpg/960px-Frankenstein_1818_edition_title_page.jpg",name:W("«Франкенштейн»","Frankenstein"),detail:W("Роман, первое издание","Novel, first edition"),place:W("Мэри Шелли","Mary Shelley"),year:1818,cr:"Public domain",
+  fact:W("Мэри Шелли начала роман в 18 лет: в компании друзей спорили, кто придумает самую страшную историю.","Mary Shelley began the novel at 18, when friends challenged each other to write the scariest story.")},
+ {id:"moby",cat:"books",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Moby-Dick_FE_title_page.jpg/840px-Moby-Dick_FE_title_page.jpg",name:W("«Моби Дик»","Moby-Dick"),detail:W("Роман, титульный лист","Novel, title page"),place:W("Герман Мелвилл","Herman Melville"),year:1851,cr:"Public domain",
+  fact:W("При жизни автора роман продавался плохо, а настоящую славу получил только в XX веке.","The novel sold poorly in Melville's lifetime and became famous only in the 20th century.")},
+ {id:"alice",cat:"books",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Alice's_Adventures_in_Wonderland_cover_(1865).jpg/960px-Alice's_Adventures_in_Wonderland_cover_(1865).jpg",name:W("«Алиса в Стране чудес»","Alice's Adventures in Wonderland"),detail:W("Детская книга, обложка","Children's book, cover"),place:W("Льюис Кэрролл","Lewis Carroll"),year:1865,cr:"Public domain",
+  fact:W("Историю Кэрролл сначала рассказал вслух трём девочкам во время прогулки на лодке.","Carroll first told the story aloud to three girls during a boat trip.")},
+ {id:"maxmor",cat:"books",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Max_und_Moritz_(Busch)_084.png/960px-Max_und_Moritz_(Busch)_084.png",name:W("«Макс и Мориц»","Max and Moritz"),detail:W("Страница книги в картинках","A page from the picture story"),place:W("Вильгельм Буш","Wilhelm Busch"),year:1865,cr:"Public domain",
+  fact:W("Эту историю в рисунках с рифмованными подписями часто считают предшественницей комиксов.","This story told in drawings with rhymed captions is often seen as a forerunner of comics.")},
+ {id:"verne",cat:"books",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Around_the_World_in_Eighty_Days_(1873)_front_cover.png/960px-Around_the_World_in_Eighty_Days_(1873)_front_cover.png",name:W("«Вокруг света за 80 дней»","Around the World in Eighty Days"),detail:W("Роман, обложка","Novel, cover"),place:W("Жюль Верн","Jules Verne"),year:1873,cr:"Public domain",
+  fact:W("Роман печатали в газете с продолжением, и читатели следили за маршрутом Филеаса Фогга.","The novel ran as a newspaper serial and readers followed Phileas Fogg's route.")},
+ {id:"jungle",cat:"books",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/The_Jungle_Book_(1894)_cover.jpg/960px-The_Jungle_Book_(1894)_cover.jpg",name:W("«Книга джунглей»","The Jungle Book"),detail:W("Сборник рассказов, обложка","Story collection, cover"),place:W("Редьярд Киплинг","Rudyard Kipling"),year:1894,cr:"Public domain",
+  fact:W("Киплинг получил Нобелевскую премию по литературе в 1907 году и остаётся самым молодым лауреатом.","Kipling won the Nobel Prize in Literature in 1907 and is still its youngest laureate.")},
+ {id:"ykid",cat:"books",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/YellowKid.jpeg/828px-YellowKid.jpeg",name:W("«Жёлтый малыш»","The Yellow Kid"),detail:W("Комикс в газете","Newspaper comic"),place:W("Ричард Аутколт","Richard Outcault"),year:1895,cr:"Public domain",
+  fact:W("Жёлтая рубашка героя дала название «жёлтой прессе».","The hero's yellow shirt gave its name to “yellow journalism”.")},
+ {id:"dracula",cat:"books",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Dracula-First-Edition-1897.jpg/960px-Dracula-First-Edition-1897.jpg",name:W("«Дракула»","Dracula"),detail:W("Роман, первое издание","Novel, first edition"),place:W("Брэм Стокер","Bram Stoker"),year:1897,cr:"Public domain",
+  fact:W("Первое издание вышло в жёлтой обложке с крупным красным названием.","The first edition came in a yellow cover with the title in large red letters.")},
+ {id:"oz",cat:"books",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/The_Wonderful_Wizard_of_Oz_first_edition_cover.jpg/960px-The_Wonderful_Wizard_of_Oz_first_edition_cover.jpg",name:W("«Удивительный волшебник из страны Оз»","The Wonderful Wizard of Oz"),detail:W("Детская книга, первое издание","Children's book, first edition"),place:W("Лаймен Фрэнк Баум","L. Frank Baum"),year:1900,cr:"Public domain",
+  fact:W("Фильм 1939 года сделал эту историю известной на весь мир.","The 1939 film made the story famous worldwide.")},
+ {id:"nemo",cat:"books",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Little_Nemo_1907-09-29.jpg/960px-Little_Nemo_1907-09-29.jpg",name:W("Little Nemo in Slumberland","Little Nemo in Slumberland"),detail:W("Комикс в газете","Newspaper comic"),place:W("Уинзор Маккей","Winsor McCay"),year:1905,cr:"Public domain",
+  fact:W("Каждая страница показывает сон мальчика, а в последнем кадре он просыпается в кровати.","Each page shows a boy's dream, and in the last panel he wakes up in bed.")},
+ {id:"krazy",cat:"books",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Krazy_Kat_1916-07-09.jpg/960px-Krazy_Kat_1916-07-09.jpg",name:W("Krazy Kat","Krazy Kat"),detail:W("Комикс в газете","Newspaper comic"),place:W("Джордж Херриман","George Herriman"),year:1913,cr:"Public domain",
+  fact:W("Действие почти всегда происходит в пустыне округа Коконино, где пейзаж менялся от кадра к кадру.","The strip is set in the desert of Coconino County, where the scenery shifts from panel to panel.")},
+ {id:"gatsby",cat:"books",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/The_Great_Gatsby_cover_1925_wikisource.jpg/960px-The_Great_Gatsby_cover_1925_wikisource.jpg",name:W("«Великий Гэтсби»","The Great Gatsby"),detail:W("Роман, первая обложка","Novel, first cover"),place:W("Фрэнсис Фицджеральд","F. Scott Fitzgerald"),year:1925,cr:"Public domain",
+  fact:W("На обложке нарисованы глаза над ночным городом: художник придумал их ещё до того, как книга была дописана.","The cover shows eyes over a night city; the artist painted it before the book was finished.")},
+ {id:"caligari",cat:"films",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/The_Cabinet_of_Doctor_Caligari_Movie_poster.jpg/960px-The_Cabinet_of_Doctor_Caligari_Movie_poster.jpg",name:W("«Кабинет доктора Калигари»","The Cabinet of Dr. Caligari"),detail:W("Немой фильм, афиша","Silent film, poster"),place:W("Германия","Germany"),year:1920,cr:"Public domain",
+  fact:W("Кривые острые декорации стали образцом немецкого экспрессионизма.","Its crooked, angular sets became the model for German expressionism.")},
+ {id:"kid",cat:"films",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/The_Kid_(1921)_poster.jpg/960px-The_Kid_(1921)_poster.jpg",name:W("«Малыш»","The Kid"),detail:W("Немой фильм, афиша","Silent film, poster"),place:W("США","USA"),year:1921,cr:"Public domain",
+  fact:W("Это первый полнометражный фильм, который Чаплин снял как режиссёр.","It was the first feature-length film Chaplin directed.")},
+ {id:"goldrush",cat:"films",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Gold_rush_poster.jpg/960px-Gold_rush_poster.jpg",name:W("«Золотая лихорадка»","The Gold Rush"),detail:W("Немой фильм, афиша","Silent film, poster"),place:W("США","USA"),year:1925,cr:"Public domain",
+  fact:W("Сцену, где герой варит и ест свой ботинок, снимали несколько дней.","The scene where the hero boils and eats his shoe took several days to film.")},
+ {id:"potemkin",cat:"films",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Vintage_Potemkin.jpg/960px-Vintage_Potemkin.jpg",name:W("«Броненосец «Потёмкин»","Battleship Potemkin"),detail:W("Немой фильм, афиша","Silent film, poster"),place:W("СССР","USSR"),year:1925,cr:"Public domain",
+  fact:W("Сцена на Одесской лестнице стала одной из самых цитируемых в истории кино.","The Odessa Steps scene is among the most quoted in film history.")},
+ {id:"metropolis",cat:"films",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/1927_Boris_Bilinski_(1900-1948)_Plakat_f%C3%BCr_den_Film_Metropolis,_Staatliche_Museen_zu_Berlin.jpg/960px-1927_Boris_Bilinski_(1900-1948)_Plakat_f%C3%BCr_den_Film_Metropolis,_Staatliche_Museen_zu_Berlin.jpg",name:W("«Метрополис»","Metropolis"),detail:W("Немой фильм, афиша","Silent film, poster"),place:W("Германия","Germany"),year:1927,cr:"Public domain",
+  fact:W("В 2001 году фильм внесли в реестр ЮНЕСКО «Память мира».","In 2001 the film was added to UNESCO's Memory of the World register.")},
+ {id:"willie",cat:"films",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Mickey_Mouse_-_Steamboat_Willie_(1928).jpg/960px-Mickey_Mouse_-_Steamboat_Willie_(1928).jpg",name:W("«Пароходик Вилли»","Steamboat Willie"),detail:W("Мультфильм со звуком","Cartoon with sound"),place:W("США","USA"),year:1928,cr:"Public domain",
+  fact:W("Это один из первых мультфильмов, где звук записан синхронно с картинкой.","One of the first cartoons with sound synchronised to the picture.")},
+ {id:"train",cat:"films",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Great_train_robbery_Barnes.jpg/489px-Great_train_robbery_Barnes.jpg",name:W("«Большое ограбление поезда»","The Great Train Robbery"),detail:W("Короткометражный немой фильм","Short silent film"),place:W("США","USA"),year:1903,cr:"Public domain",
+  fact:W("В последнем кадре бандит стреляет прямо в зрителей.","In the final shot a bandit fires straight at the audience.")},
+ {id:"modelt",cat:"cars",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Ford_Model_T_Tourabout_6301591.jpg/960px-Ford_Model_T_Tourabout_6301591.jpg",name:W("Ford Model T","Ford Model T"),detail:W("Автомобиль","Car"),place:W("США","USA"),year:1908,cr:"Ermell, CC BY-SA 4.0",
+  fact:W("Конвейер сократил сборку одной машины с 12 часов до полутора.","The assembly line cut the build time of one car from about 12 hours to one and a half.")},
+ {id:"beetle",cat:"cars",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/1957_Volkswagen_Beetle,_export_model,_in_front_of_Porta_Nigra_in_Trier_2023-05-01.jpg/960px-1957_Volkswagen_Beetle,_export_model,_in_front_of_Porta_Nigra_in_Trier_2023-05-01.jpg",name:W("Volkswagen «Жук»","Volkswagen Beetle"),detail:W("Автомобиль, серийный выпуск","Car, series production"),place:W("Германия","Germany"),year:1945,cr:"Palauenc05, CC BY-SA 4.0",
+  fact:W("За десятилетия выпустили больше 21 миллиона машин.","More than 21 million were built over the decades.")},
+ {id:"citroen2cv",cat:"cars",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Citro%C3%ABn_2_CV_Charleston_(2015-08-29_3174_b).jpg/960px-Citro%C3%ABn_2_CV_Charleston_(2015-08-29_3174_b).jpg",name:W("Citroën 2CV","Citroën 2CV"),detail:W("Автомобиль","Car"),place:W("Франция","France"),year:1949,cr:"Lothar Spurzem, CC BY-SA 2.0 de",
+  fact:W("По легенде, машина должна была везти корзину яиц по пашне, не разбив ни одного.","Legend says it had to carry a basket of eggs across a ploughed field without breaking any.")}
 ].filter(i=>!i.noimg);
 /* Биг Мак по миру — данные индекса The Economist */
 const BM=[["jp","JPN",2000,"JPY",294,2.77,2.24,"Япония","Japan"],["euz","EUZ",2002,"EUR",2.67,2.38,2.35,"Еврозона","Euro area"],["uk","GBR",2010,"GBP",2.29,3.67,3.43,"Великобритания","United Kingdom"],
@@ -760,7 +805,11 @@ const SRC={"slinky": ["Wikipedia: Slinky", "https://en.wikipedia.org/wiki/Slinky
 const srcOf=it=>it.series==="bm"?["The Economist: Big Mac index data","https://github.com/TheEconomist/big-mac-data"]:SRC[it.id]||null;
 const srcLink=it=>{const x=srcOf(it);return x?`<a class="src" href="${x[1]}" target="_blank" rel="noopener" data-ext="1">${L("Источник","Source")}: ${esc(x[0])} ↗</a>`:""};
 /* у каждой игры свои вещи, чтобы одна игра не подсказывала ответы другой */
-const TL_IDS=["iphone","apple2","dynatac","gameboy","ps2","switch","ipad","walkman","famicom","zx","golf","fiat500","mini","watch","c64","mac","ps1","xbox","atari2600","nes","genesis","n64","gba","ps3","ps4","ps5"];
+const TL_IDS=["iphone","apple2","dynatac","gameboy","ps2","switch","ipad","walkman","famicom","zx","golf","fiat500","mini","watch","c64","mac","ps1","xbox","atari2600","nes","genesis","n64","gba","ps3","ps4","ps5","frank","moby","alice","maxmor","verne","jungle","ykid","dracula","oz","nemo","krazy","gatsby","caligari","kid","goldrush","potemkin","metropolis","willie","train","modelt","beetle","citroen2cv"];
+/* категории Хронолога */
+const TL_CATS=[["all",W("Всё подряд","Everything"),"🎲"],["tech",W("Гаджеты и техника","Gadgets & tech"),"📱"],["games",W("Игры и консоли","Games & consoles"),"🎮"],["cars",W("Машины","Cars"),"🚗"],["books",W("Книги и комиксы","Books & comics"),"📚"],["films",W("Кино","Films"),"🎬"]];
+const TL_GAMES=["gameboy","ps2","switch","famicom","ps1","xbox","atari2600","nes","genesis","n64","gba","ps3","ps4","ps5"],TL_CARS=["golf","fiat500","mini"];
+ITEMS.forEach(i=>{if(TL_IDS.includes(i.id)&&!i.cat)i.cat=TL_GAMES.includes(i.id)?"games":TL_CARS.includes(i.id)?"cars":"tech"});
 const hashId=t=>{let h=7;for(const ch of t)h=(h*31+ch.charCodeAt(0))%1000003;return h};
 const POOL=g=>ITEMS.filter(i=>{if(TL_IDS.includes(i.id))return g==="timeline";if(g==="timeline")return false;if(!srcOf(i))return false;return (hashId(i.id)%2===0)===(g==="price")});
 function pickItems(n,pool=ITEMS,maxSeries=2){const out=[],cnt={};for(const it of shuffle(pool)){if(it.series){cnt[it.series]=(cnt[it.series]||0)+1;if(cnt[it.series]>maxSeries)continue}out.push(it);if(out.length===n)break}return out}
@@ -1835,16 +1884,20 @@ const BagGame={
 };
 
 /* ================= Игра: Хронолог ================= */
-const TimelineGame={rounds:3,size:5,
+const TimelineGame={rounds:3,size:5,cat:store.get("tl_cat","all"),
  title:()=>L("Хронолог","Timeline"),
  start(el){this.el=el;this.s={i:0,total:0,res:[]};this.intro()},
  intro(){this.el.innerHTML=`<div class="col">${gameHead(this.title())}${introImg(photo("cover_timeline"))}
-   <section class="card"><p class="story">${L("В музее перепутали таблички с годами. Перед вами вещи, у каждой есть год, когда она поступила в продажу.","The museum mixed up its year labels. Each exhibit here has the year it first went on sale.")}</p>
+   <section class="card"><p class="story">${L("В музее перепутали таблички с годами. Перед вами вещи, у каждой есть год, когда она появилась: вышла в продажу, на экраны или в печать.","The museum mixed up its year labels. Each exhibit here has the year it first appeared: on sale, on screen or in print.")}</p>
    <p class="story">${L("Расставьте вещи от самой ранней к самой поздней. Зажмите карточку и перетащите её в любую ячейку. Можно и просто нажать: карточка встанет в первую свободную ячейку.","Put them in order from earliest to latest. Press and drag a card into any slot, or just tap it to fill the next empty slot.")}</p>
    <ul class="ticks small"><li>${L(`${this.rounds} зала по ${this.size} вещей`,`${this.rounds} rooms, ${this.size} exhibits each`)}</li><li>${L("С каждым залом годы всё ближе друг к другу","Each room is harder: the release years get closer together")}</li><li>${L("200 очков за каждую вещь на своём месте и +200, если весь зал без ошибок","200 points for each exhibit in the right slot, +200 for a perfect room")}</li></ul>
-   <button class="go" id="go">${L("Открыть первый зал","Open the first room")}</button></section></div>`;$("#go").onclick=()=>this.round()},
+   <div class="label" style="margin-top:12px">${L("Тема","Topic")}</div>
+   <div class="tlcats" role="group" aria-label="${L("Тема","Topic")}">${TL_CATS.map(([id,nm,ic])=>{const n=id==="all"?POOL("timeline").length:POOL("timeline").filter(i=>i.cat===id).length;return `<button type="button" class="chip tlc${this.cat===id?" on":""}" data-cat="${id}" aria-pressed="${this.cat===id}">${ic} ${tr(nm)} <small>${n}</small></button>`}).join("")}</div>
+   <button class="go" id="go">${L("Открыть первый зал","Open the first room")}</button></section></div>`;
+   this.el.querySelectorAll(".tlc").forEach(b=>b.onclick=()=>{this.cat=b.dataset.cat;store.set("tl_cat",this.cat);this.el.querySelectorAll(".tlc").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on)})});
+   $("#go").onclick=()=>this.round()},
  /* каждый зал сложнее: годы всё ближе друг к другу (без ограничения, окно 25 лет, окно 12 лет) */
- pickSet(){const W=[999,25,12][Math.min(this.s?.i||0,2)],pool=POOL("timeline");
+ pickSet(){const W=[999,25,12][Math.min(this.s?.i||0,2)],pool=POOL("timeline").filter(i=>this.cat==="all"||i.cat===this.cat);
    for(let t=0;t<60;t++){const a=pool[Math.floor(Math.random()*pool.length)],lo=a.year-Math.floor(Math.random()*W),out=[],yrs=new Set();
      for(const it of shuffle(pool)){if(it.year>=lo&&it.year<=lo+W&&!yrs.has(it.year)){out.push(it);yrs.add(it.year)}if(out.length===this.size)return out}}
    const out=[],yrs=new Set();for(const it of shuffle(pool)){if(!yrs.has(it.year)){out.push(it);yrs.add(it.year)}if(out.length===this.size)break}return out},
