@@ -188,6 +188,7 @@ details.brief summary::after{content:" ▾";color:var(--muted)}details.brief:not
 input[type=range]{width:100%;accent-color:var(--amber);height:28px}
 .scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
 .tlcats{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px}.tlc{cursor:pointer;font-size:14px;padding:7px 11px}.tlc small{opacity:.6;margin-left:4px}.tlc.on{background:var(--amber);color:#111;border-color:var(--amber)}
+.dioarr{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);color:var(--amber);font:600 13px var(--mono);padding:8px 10px;border-radius:6px;pointer-events:none;z-index:3}.dioarr.l{left:8px}.dioarr.r{right:8px}
 .row4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.row6{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.row6 button{padding:8px 0;font-family:var(--mono);font-size:13px}
 .yscale{position:relative;height:30px;margin:2px 8px 8px}.yscale button{position:absolute;top:0;transform:translateX(-50%);background:none;border:0;padding:4px 2px;font:11px var(--mono);color:var(--muted);text-transform:none;letter-spacing:0;white-space:nowrap}.yscale button:first-child{transform:none;left:-8px!important}.yscale button:last-child{transform:translateX(-100%);left:calc(100% + 8px)!important}.yscale button:hover{color:var(--amber)}
 .row4 button{padding:8px 2px;font-family:var(--mono)}
@@ -2043,7 +2044,7 @@ const TX={
 function Diorama(el,spec,onHot){
   const W=el.clientWidth,H=el.clientHeight;const r=new THREE.WebGLRenderer({antialias:true});r.setPixelRatio(Math.min(2,devicePixelRatio||1));r.setSize(W,H);r.outputEncoding=THREE.sRGBEncoding;el.appendChild(r.domElement);
   const sc=new THREE.Scene();sc.background=new THREE.Color("#1b1814");const cam=new THREE.PerspectiveCamera(72,W/H,.05,100);cam.position.set(0,1.6,0);
-  sc.add(new THREE.AmbientLight(0xffffff,.75));const dl=new THREE.DirectionalLight(0xfff1d6,.55);dl.position.set(2,5,3);sc.add(dl);
+  sc.fog=new THREE.Fog(0x1b1814,7,17);sc.add(new THREE.AmbientLight(0xffffff,.52));const dl=new THREE.DirectionalLight(0xfff1d6,.38);dl.position.set(2,5,3);sc.add(dl);const lamp=new THREE.PointLight(0xffe2b0,.55,0,1.4);lamp.position.set(0,(spec.h||4)-.5,0);sc.add(lamp);
   const {w,d,h}=spec;const M=(t,o={})=>new THREE.MeshLambertMaterial({map:t,...o});const loader=new THREE.TextureLoader();loader.setCrossOrigin("anonymous");
   const plane=(pw,ph,mat)=>new THREE.Mesh(new THREE.PlaneGeometry(pw,ph),mat);
   const wallT=TX.wall(spec.wall||"#b9a887",spec.stripe);wallT.wrapS=wallT.wrapT=THREE.RepeatWrapping;
@@ -2054,6 +2055,8 @@ function Diorama(el,spec,onHot){
   /* точка на стене: wall, x вдоль стены (от центра), y — высота, отступ от стены */
   const onWall=(wk,x,y,off=.02)=>{const [wx,wz,ry]=walls[wk];const o=new THREE.Object3D();o.rotation.y=ry;const dir=new THREE.Vector3(1,0,0).applyEuler(o.rotation),nrm=new THREE.Vector3(0,0,1).applyEuler(o.rotation);
     return {p:new THREE.Vector3(wx,y,wz).addScaledVector(dir,x).addScaledVector(nrm,off),ry}};
+  /* плинтус и карниз: комната перестаёт быть голой коробкой */
+  for(const k in walls){const len=walls[k][3];for(const [yy,hh,col] of [[.11,.22,"#3d2a1a"],[h-.08,.16,"#d9cfb8"]]){const q=onWall(k,0,yy,.035);const tr=new THREE.Mesh(new THREE.BoxGeometry(len,hh,.07),M(TX.wood(col)));tr.position.copy(q.p);tr.rotation.y=q.ry;sc.add(tr)}}
   const hots=[];
   for(const it of spec.items||[]){let mesh;
     if(it.t==="pic"||it.t==="win"||it.t==="hooks"||it.t==="smock"||it.t==="paper"||it.t==="door"){const q=onWall(it.wall,it.x,it.y,it.t==="win"?.01:.03);
@@ -2067,19 +2070,23 @@ function Diorama(el,spec,onHot){
   /* метки улик */
   const ring=cvTex(128,128,(g)=>{g.strokeStyle="#F0A63A";g.lineWidth=10;g.beginPath();g.arc(64,64,48,0,7);g.stroke();g.fillStyle="rgba(240,166,58,.35)";g.beginPath();g.arc(64,64,40,0,7);g.fill();g.fillStyle="#fff";g.font="bold 60px sans-serif";g.textAlign="center";g.textBaseline="middle";g.fillText("?",64,68)});
   const ok=cvTex(128,128,(g)=>{g.fillStyle="rgba(76,175,80,.85)";g.beginPath();g.arc(64,64,46,0,7);g.fill();g.strokeStyle="#fff";g.lineWidth=12;g.beginPath();g.moveTo(38,66);g.lineTo(56,84);g.lineTo(92,44);g.stroke()});
-  for(const ht of spec.hots||[]){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:ring,depthTest:false,transparent:true}));s.position.set(...ht.p);s.scale.set(.32,.32,1);s.userData.id=ht.id;s.renderOrder=9;sc.add(s);hots.push(s)}
-  let lon=spec.look||0,lat=0,drag=null,raf=0,alive=true,dirty=true;
+  for(const ht of spec.hots||[]){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:ring,depthTest:false,transparent:true}));s.position.set(...ht.p);s.scale.set(.4,.4,1);s.userData.id=ht.id;s.renderOrder=9;sc.add(s);hots.push(s)}
+  let lon=spec.look||0,lat=0,drag=null,raf=0,alive=true,dirty=true,idle=true,tw=null;
+  const aL=document.createElement("div"),aR=document.createElement("div");aL.className="dioarr l";aR.className="dioarr r";aL.hidden=aR.hidden=true;el.appendChild(aL);el.appendChild(aR);
+  const azOf=p=>Math.atan2(p.x,-p.z)*180/Math.PI,dAng=a=>((a%360)+540)%360-180;
+  const arrows=()=>{let nl=0,nr=0;for(const s of hots){if(s.userData.done||!s.visible)continue;const d=dAng(azOf(s.position)-lon);if(Math.abs(d)>38){if(d>0)nr++;else nl++}}aL.hidden=!nl;aR.hidden=!nr;if(nl)aL.textContent="◀ "+nl;if(nr)aR.textContent=nr+" ▶"};
+  const onKey=e=>{if(!alive||!document.body.contains(el))return;if(e.key==="ArrowLeft"){idle=false;lon-=7}else if(e.key==="ArrowRight"){idle=false;lon+=7}else if(e.key==="ArrowUp"){idle=false;lat+=5}else if(e.key==="ArrowDown"){idle=false;lat-=5}};document.addEventListener("keydown",onKey);
   const look=()=>{lat=Math.max(-55,Math.min(55,lat));const phi=THREE.MathUtils.degToRad(90-lat),th=THREE.MathUtils.degToRad(lon);cam.lookAt(cam.position.x+Math.sin(phi)*Math.sin(th),cam.position.y+Math.cos(phi),cam.position.z-Math.sin(phi)*Math.cos(th))};
   const cv=r.domElement;cv.style.touchAction="none";
-  cv.addEventListener("pointerdown",e=>{drag={x:e.clientX,y:e.clientY,lon,lat,moved:false};cv.setPointerCapture(e.pointerId)});
+  cv.addEventListener("pointerdown",e=>{idle=false;tw=null;drag={x:e.clientX,y:e.clientY,lon,lat,moved:false};cv.setPointerCapture(e.pointerId)});
   cv.addEventListener("pointermove",e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>5)drag.moved=true;lon=drag.lon-dx*.22;lat=drag.lat+dy*.18;dirty=true});
   cv.addEventListener("pointerup",e=>{const was=drag;drag=null;if(was&&!was.moved){const rc=new THREE.Raycaster(),b=cv.getBoundingClientRect();rc.setFromCamera({x:(e.clientX-b.left)/b.width*2-1,y:-(e.clientY-b.top)/b.height*2+1},cam);
-    const hit=rc.intersectObjects(hots)[0];if(hit&&hit.object.visible&&!hit.object.userData.done&&onHot(hit.object.userData.id)!==false){hit.object.userData.done=1;hit.object.material=new THREE.SpriteMaterial({map:ok,depthTest:false,transparent:true});dirty=true}}});
+    const hit=rc.intersectObjects(hots)[0];if(hit&&hit.object.visible&&!hit.object.userData.done&&onHot(hit.object.userData.id)!==false){const hp=hit.object.position;const tgt=azOf(hp);tw={t:0,a:lon,b:lon+dAng(tgt-lon),c:lat,d:Math.max(-20,Math.min(20,Math.atan2(hp.y-1.6,Math.hypot(hp.x,hp.z))*180/Math.PI))};hit.object.userData.done=1;hit.object.material=new THREE.SpriteMaterial({map:ok,depthTest:false,transparent:true});dirty=true}}});
   cv.addEventListener("wheel",e=>{e.preventDefault();cam.fov=Math.max(40,Math.min(85,cam.fov+e.deltaY*.04));cam.updateProjectionMatrix();dirty=true},{passive:false});
   const ro=new ResizeObserver(()=>{const W2=el.clientWidth,H2=el.clientHeight;if(!W2||!H2)return;r.setSize(W2,H2);cam.aspect=W2/H2;cam.updateProjectionMatrix();dirty=true});ro.observe(el);
-  const loop=t=>{if(!alive)return;const k=1+Math.sin(t/300)*.12;for(const s of hots)s.scale.set(.32*k,.32*k,1);look();r.render(sc,cam);raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
+  const loop=t=>{if(!alive)return;const k=1+Math.sin(t/300)*.12;for(const s of hots)s.scale.set(.4*k,.4*k,1);if(idle&&!drag&&!tw)lon+=.035;if(tw){tw.t=Math.min(1,tw.t+.05);const e=1-Math.pow(1-tw.t,3);lon=tw.a+(tw.b-tw.a)*e;lat=tw.c+(tw.d-tw.c)*e;if(tw.t>=1)tw=null}arrows();look();r.render(sc,cam);raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);
   return {rest(){for(const s of hots)if(!s.userData.done)s.visible=false;dirty=true},mark(id){const s=hots.find(x=>x.userData.id===id);if(s){s.userData.done=1};if(s)s.material=new THREE.SpriteMaterial({map:ok,depthTest:false,transparent:true})},turn(d){lon+=d},
-    clear(){alive=false;cancelAnimationFrame(raf);ro.disconnect();r.dispose();sc.traverse(o=>{o.geometry?.dispose();if(o.material){o.material.map?.dispose();o.material.dispose()}});cv.remove()}}
+    clear(){alive=false;document.removeEventListener("keydown",onKey);cancelAnimationFrame(raf);ro.disconnect();r.dispose();sc.traverse(o=>{o.geometry?.dispose();if(o.material){o.material.map?.dispose();o.material.dispose()}});cv.remove()}}
 }
 
 /* ---------- дело: «Улыбка пропала» (кража «Джоконды», 1911–1913) ---------- */
@@ -2171,7 +2178,7 @@ const CaseGame={
    $("#go").onclick=()=>{CAP.track("case_start","case");this.stop()}},
  stop(){scrollTo(0,0);const s=this.s,st=this.c.stops[s.at];const n=st.hots.length,f=st.hots.filter(h=>s.found[s.at+":"+h.id]).length;
    this.el.innerHTML=`<div class="col">${this.head()}<div class="cplace"><b>${tr(st.place)}</b><span class="mono">${tr(st.when)}</span></div>
-   <div class="dio" id="dio"><span class="tagx dtag">${L("3D · крутите сцену","3D · drag to look around")}</span><span class="tagx dcount">${L("Осмотров","Looks")} ${Math.max(0,this.c.looks-f)}/${this.c.looks}</span></div>
+   <div class="dio" id="dio"><span class="tagx dtag">${L("Тяните, чтобы осмотреться · жмите на «?»","Drag to look around · tap a ?")}</span><span class="tagx dcount">${L("Осмотров","Looks")} ${Math.max(0,this.c.looks-f)}/${this.c.looks}</span></div>
    <div class="clues" id="clues">${st.hots.filter(h=>s.found[s.at+":"+h.id]).map(h=>`<div class="fact">${esc(tr(h.text))}</div>`).join("")||`<p class="small muted">${L(`Меток больше, чем времени: осмотреть можно только ${this.c.looks}. Не все улики полезны.`,`There are more markers than time: you can only examine ${this.c.looks}. Not every clue helps.`)}</p>`}</div>
    <div class="actbar"><button class="go" id="onw" ${f<2?"disabled":""}>${st.ask?L("Куда дальше?","Where next?"):L("К аресту","Make the arrest")}</button></div></div>`;
    const box=$("#dio");CURV?.clear();let dio=null;try{dio=Diorama(box,{...st.scene,hots:st.hots},id=>this.hot(id))}catch(e){box.insertAdjacentHTML("beforeend",`<p class="small">${L("3D недоступно на этом устройстве","3D isn't available on this device")}</p>`)}
