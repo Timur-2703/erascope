@@ -121,6 +121,10 @@ button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:va
 .ctitle{font-family:var(--display);font-size:28px;text-transform:uppercase;margin:4px 0}
 @media (max-width:420px){.suspects{grid-template-columns:1fr}.susp{grid-template-columns:80px 1fr;align-items:center}.susp img{grid-row:span 3;width:80px}}
 
+.chbanner{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:0 0 12px;padding:12px 14px;border:1px solid var(--amber);border-radius:12px;background:var(--panel);color:var(--fg);text-decoration:none}.chbanner b{color:var(--amber);white-space:nowrap}
+.chres{margin:8px 0;font-weight:600;text-align:center}.chres.win{color:#6fbf73}.chres.lose{color:var(--amber)}
+.dsplit{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.dsplit button{flex:1 1 160px}
+.today{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin:14px 0 4px}.tchip{padding:7px 12px;border:1px solid var(--line,#444);border-radius:999px;color:var(--fg);text-decoration:none;font-size:14px}.tchip.done{border-color:var(--amber);color:var(--amber)}.tchip b{font-family:var(--mono);margin-left:4px}.tstreak{margin-left:auto;font-size:14px;color:var(--muted)}
 .dloop{display:grid;gap:6px;justify-items:center;margin:4px 0 2px;text-align:center}.dloop .fire{font-size:18px}.dloop .fire b{font-size:22px;color:var(--amber)}.drank{font-size:16px;font-weight:600;color:var(--fg)}.drank:empty{display:none}
 .dstat{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-family:var(--mono);font-size:13px;color:#E8E4DA}.dstat .g{letter-spacing:1px}
 .hilites{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px;text-align:left}.hilites li{padding:8px 12px;background:var(--panel2);border-radius:6px;font-size:15px;line-height:1.4}.hilites li.rec{color:#111;background:var(--amber);font-weight:600}
@@ -495,8 +499,18 @@ function offText(g,p){const k=g/p;if(Math.abs(k-1)<0.005)return L("точно в
 function haversine(a,b){const R=6371,r=Math.PI/180,dLa=(b[1]-a[1])*r,dLo=(b[0]-a[0])*r;const h=Math.sin(dLa/2)**2+Math.cos(a[1]*r)*Math.cos(b[1]*r)*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 const distText=d=>d<1?Math.round(d*1000)+L(" м"," m"):d<10?numStr(Math.round(d*10)/10).replace(/[.,]00$/,"")+L(" км"," km"):ru(d)+L(" км"," km");
 const photo=id=>/^https?:/.test(id)?id:"photos/"+id+".jpg";
-function copyText(text,toast){CAP.track("share",VIEW);const U=(window.PRIKIDKA_CONFIG||{}).SITE_URL;if(U)text+="\n"+U;(navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject()).then(()=>toast.textContent=L("Скопировано, можно отправлять","Copied, ready to share"))
+function copyText(text,toast,ch){CAP.track("share",VIEW);const U=(window.PRIKIDKA_CONFIG||{}).SITE_URL;if(U)text+="\n"+U+(ch?`/?s=ch&cg=${ch.g}&cs=${Math.round(ch.s)}&cd=${ch.d}`:"");(navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject()).then(()=>toast.textContent=L("Скопировано, можно отправлять","Copied, ready to share"))
   .catch(()=>{toast.textContent=L("Скопируйте вручную:","Copy it manually:");const t=document.createElement("textarea");t.value=text;t.readOnly=true;t.style.cssText="width:100%;background:var(--panel2);color:var(--fg)";toast.after(t);t.select()})}
+
+
+/* «Вызов другу»: ссылка с результатом друга в вызове дня; сравнение показываем после своей игры */
+const CH=(()=>{try{const q=new URLSearchParams(location.search),v=+q.get("cs");return v>0?{g:q.get("cg")||"where",s:v,d:+q.get("cd")||0}:null}catch(e){return null}})();
+const CHN={where:()=>L("Где и когда","Where & When"),price:()=>L("Сколько стоило?","What Did It Cost?"),timeline:()=>L("Хронолог","Timeline")};
+function chBanner(){if(!CH||!CHN[CH.g])return "";try{if(!sessionStorage.getItem("pk_ch")){sessionStorage.setItem("pk_ch","1");CAP.track("challenge_open",CH.g,CH.s)}}catch(e){}
+  return `<a class="chbanner" href="#${CH.g}">🎯 <span>${L(`Друг набрал ${ru(CH.s)} в «${CHN[CH.g]()}»${CH.d?" #"+CH.d:""}. Сможете лучше?`,`A friend scored ${ru(CH.s)} in ${CHN[CH.g]()}${CH.d?" #"+CH.d:""}. Can you beat it?`)}</span><b>${L("Играть","Play")} →</b></a>`}
+function chResult(g,total){if(!CH||CH.g!==g||CH.d!==dayNo())return "";CAP.track("challenge_done",g,total);const d=total-CH.s;
+  return `<p class="chres ${d>0?"win":d<0?"lose":""}">🎯 ${L("Результат друга","Friend's score")}: ${ru(CH.s)} · ${d>0?L(`вы выше на ${ru(d)}`,`you win by ${ru(d)}`):d<0?L(`вам не хватило ${ru(-d)}`,`you missed by ${ru(-d)}`):L("ничья","a tie")}</p>`}
+const dailyLoop=n=>`<div class="dloop"><span class="fire">🔥 <b>${n}</b> ${L(plural(n,"день","дня","дней")+" подряд",n===1?"day in a row":"days in a row")}</span><span class="muted small">${L("Следующий вызов через","Next daily in")} <b class="cdown">${cdText()}</b></span></div>`;
 
 /* ---------- счётчик точности ---------- */
 const EMPTY_STATS={games:{},guess:{n:0,hit:0,close:0,miss:0,sumErr:0},streak:{days:0,last:null},geo:{n:0,loc:0,year:0}};
@@ -837,7 +851,7 @@ const PR_GAMES="dreamcast ds psp x360 vboy saturn lynx neogeo gamegear gamecube 
 ITEMS.forEach(i=>{if(i.cat)return;i.cat=PR_GAMES.includes(i.id)?"games":PR_CARS.includes(i.id)?"cars":PR_CULT.includes(i.id)?"culture":(PR_LIFE.includes(i.id)||/^kz|^bm/.test(i.id)||i.series==="bm")?"life":"tech"});
 const hashId=t=>{let h=7;for(const ch of t)h=(h*31+ch.charCodeAt(0))%1000003;return h};
 const POOL=g=>ITEMS.filter(i=>{if(TL_IDS.includes(i.id))return g==="timeline";if(g==="timeline")return false;if(!srcOf(i))return false;return (hashId(i.id)%2===0)===(g==="price")});
-function pickItems(n,pool=ITEMS,maxSeries=2){const out=[],cnt={};for(const it of shuffle(pool)){if(it.series){cnt[it.series]=(cnt[it.series]||0)+1;if(cnt[it.series]>maxSeries)continue}out.push(it);if(out.length===n)break}return out}
+function pickItems(n,pool=ITEMS,maxSeries=2,rnd=Math.random){const out=[],cnt={};for(const it of shuffle(pool,rnd)){if(it.series){cnt[it.series]=(cnt[it.series]||0)+1;if(cnt[it.series]>maxSeries)continue}out.push(it);if(out.length===n)break}return out}
 
 /* ================= кадры для «Где и когда» ================= */
 const G=(id,kind,lat,lon,cid,year,place,title,clue,credit)=>({id,kind,lat,lon,cid,year,place,title,clue,credit});
@@ -1646,10 +1660,10 @@ const WhereGame={
        return hiBlock(st,total,[L(`Лучший кадр — ${esc(tr(b.r.place))}: ${distText(b.d)} от места, ${yd}.`,`Best shot: ${esc(tr(b.r.place))}, ${distText(b.d)} off, ${yd}.`),
          L(`Ближе 500 км от места: ${ok} ${L("из","of")} ${this.res.length}.`,`Within 500 km: ${ok} of ${this.res.length}.`)],
          L("🟩 80% очков и больше · 🟨 50% · 🟧 25% · 🟥 меньше","🟩 80%+ of the points · 🟨 50%+ · 🟧 25%+ · 🟥 less"))})()}
-     <div class="btns"><button id="copy">${L("Поделиться результатом","Share result")}</button><button class="go" id="again">${this.mode==="daily"?L("Свободная игра","Free play"):L("Ещё раз","Play again")}</button></div><div class="toast" id="toast"></div></div>
+     ${daily?chResult("where",total):""}<div class="btns"><button id="copy">${daily?L("Бросить вызов другу","Challenge a friend"):L("Поделиться результатом","Share result")}</button><button class="go" id="again">${this.mode==="daily"?L("Свободная игра","Free play"):L("Ещё раз","Play again")}</button></div><div class="toast" id="toast"></div></div>
      <div class="card"><div class="label">${L("Разбор","Breakdown")}</div><div class="rows">${this.res.map(x=>`<div class="rrow"><span class="thumb"><img src="${roundSrc(x.r)}" alt=""></span>
        <div>${esc(tr(x.r.place))}, ${yfmt(x.r.year)}<br><span class="muted mono">${distText(x.d)} · ${x.dy===0?L("год точно","exact year"):(x.dy>0?"+":"")+x.dy+" "+yearsText(x.dy)}</span></div><b>${sq(x.total,x.max)} ${ru(x.total)}</b></div>`).join("")}</div></div></section></div>`;
-   let K=null;$("#again").onclick=()=>this.begin("free");$("#copy").onclick=()=>copyText(shareTxt(K),$("#toast"));
+   let K=null;$("#again").onclick=()=>this.begin("free");$("#copy").onclick=()=>copyText(shareTxt(K),$("#toast"),daily?{g:"where",s:total,d:dayNo()}:null);
    if(daily){const done=()=>{K=dailyRank(total);const e=$("#drank");if(e)e.textContent=rankText(K)};CAP.submit("where",st.best,stats().xp,total).then(done,done)}}
 };
 
@@ -1662,10 +1676,10 @@ const PriceGame={rounds:10,cat:store.get("pr_cat","all"),
    this.el.innerHTML=`<div class="col">${gameHead(this.title())}<section class="card"><div class="label">${L("Тема","Topic")}</div>
    <p>${L("Вещи из разных лет: у каждой нужно угадать цену в долларах. Выберите тему, которая вам ближе.","Things from different years. Guess each price in US dollars. Pick the topic you like best.")}</p>
    <div class="tlcats" role="group" aria-label="${L("Тема","Topic")}">${cats.map(([id,nm,ic])=>`<button type="button" class="chip tlc${this.cat===id?" on":""}" data-cat="${id}" aria-pressed="${this.cat===id}">${ic} ${tr(nm)} <small>${this.kinds(id)}</small></button>`).join("")}</div>
-   <button class="go" id="go">${L("Начать","Start")}</button></section></div>`;
+   <div class="dsplit">${(()=>{const d=store.get("dprice_"+dayIdx(),null);return `<button class="go" id="daily" ${d?"disabled":""}>${d?L("Вызов дня сыгран","Daily played")+" · "+ru(d.total):L("Вызов дня","Daily")+" #"+dayNo()+" · "+L("5 лотов","5 items")}</button>`})()}<button id="go">${L("Свободная игра","Free play")}</button></div><p class="note small">${L("Вызов дня одинаковый для всех игроков, тема не важна.","The daily is the same for everyone, topic ignored.")}</p></section></div>`;
    this.el.querySelectorAll(".tlc").forEach(b=>b.onclick=()=>{this.cat=b.dataset.cat;store.set("pr_cat",this.cat);this.el.querySelectorAll(".tlc").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on)})});
-   $("#go").onclick=()=>this.begin()},
- begin(){const pool=this.poolOf(this.cat);this.rounds=Math.min(10,this.kinds(this.cat));this.s={q:pickItems(this.rounds,pool),i:0,total:0,res:[],t:{hit:0,close:0,miss:0}};this.round()},
+   $("#go").onclick=()=>this.begin();$("#daily").onclick=()=>this.begin("daily")},
+ begin(mode){const daily=mode==="daily";this.daily=daily;const pool=daily?[...POOL("price")].sort((a,b)=>a.id<b.id?-1:1):this.poolOf(this.cat);this.rounds=daily?5:Math.min(10,this.kinds(this.cat));this.s={q:pickItems(this.rounds,pool,2,daily?seeded(dayIdx()*7919+3):Math.random),i:0,total:0,res:[],t:{hit:0,close:0,miss:0}};this.round()},
  title:()=>L("Сколько стоило?","What Did It Cost?"),
  head(){const s=this.s;return gameHead(this.title(),`<span class="chip">${L("Раунд","Round")} ${Math.min(s.i+1,this.rounds)}/${this.rounds}</span><span class="chip a">${ru(s.total)} ${L("очков","pts")}</span>`)+`<div class="hud">${tally(s.t)}${steps(this.rounds,s.i)}</div>`},
  round(){const s=this.s,it=s.q[s.i];this.el.innerHTML=`<div class="col">${this.head()}${exhibitHTML(it)}<div id="w"></div></div>`;priceWidget($("#w"),it.cur,it.price,L("Это моя цена","Lock in price"),(g,R)=>this.reveal(g,R))},
@@ -1674,13 +1688,14 @@ const PriceGame={rounds:10,cat:store.get("pr_cat","all"),
    const b=$("#next");b.textContent=s.i+1<this.rounds?L("Следующий лот","Next item"):L("Итоги","Results");b.focus();b.onclick=()=>{s.i++;s.i<this.rounds?this.round():this.finish()}},
  finish(){const s=this.s,st=logGame("price",s.total);const grid=s.res.map(r=>GR[r.gr].sq).join("");
    const mx=this.rounds*1000,rank=s.total>=mx*.8?L("Ходячий прайс-лист","Walking price list"):s.total>=mx*.6?L("Опытный покупатель","Seasoned shopper"):s.total>=mx*.4?L("Чувствует цену","Has a feel for prices"):L("Турист во времени","Time tourist");
-   const share=`${(CFG.BRAND_EN||"Erascope")} · ${this.title()} ${ru(s.total)}/${ru(mx)}\n${grid}\n${rank}`;
+   const daily=this.daily,streak=daily?bumpDStreak():0;if(daily){store.set("dprice_"+dayIdx(),{total:s.total,max:mx,grid});CAP.track("daily_done","price",dayNo())}
+   const share=daily?`Erascope #${dayNo()} · ${this.title()}\n${grid} ${ru(s.total)}/${ru(mx)}\n🔥 ${streak}`:`${(CFG.BRAND_EN||"Erascope")} · ${this.title()} ${ru(s.total)}/${ru(mx)}\n${grid}\n${rank}`;
    this.el.innerHTML=`<div class="col">${gameHead(this.title())}<section class="card final"><div class="label">${L("Итог","Final score")}</div><div class="total">${ru(s.total)}</div>
      <div class="muted">${L("из","of")} ${ru(mx)} · ${rank} · ${L("рекорд","best")} ${ru(st.best)}</div>${tallyBlock(s.t)}
      <div class="grid">${grid}</div>${(()=>{const b=[...s.res].sort((a,c)=>Math.abs(Math.log(a.g/a.it.price))-Math.abs(Math.log(c.g/c.it.price)))[0];
-       return hiBlock(st,s.total,[L(`Точнее всего — ${tr(b.it.name)} (${b.it.year}): ${offText(b.g,b.it.price)}.`,`Closest guess: ${tr(b.it.name)} (${b.it.year}), ${offText(b.g,b.it.price)}.`)],L("🟩 ошибка до 10% · 🟨 до 30% · 🟥 больше","🟩 within 10% · 🟨 within 30% · 🟥 further off"))})()}<div class="btns"><button id="copy">${L("Поделиться результатом","Share result")}</button><button class="go" id="again">${L("Ещё раз","Play again")}</button></div><div class="toast" id="toast"></div>
+       return hiBlock(st,s.total,[L(`Точнее всего — ${tr(b.it.name)} (${b.it.year}): ${offText(b.g,b.it.price)}.`,`Closest guess: ${tr(b.it.name)} (${b.it.year}), ${offText(b.g,b.it.price)}.`)],L("🟩 ошибка до 10% · 🟨 до 30% · 🟥 больше","🟩 within 10% · 🟨 within 30% · 🟥 further off"))})()}${daily?dailyLoop(streak)+chResult("price",s.total):""}<div class="btns"><button id="copy">${daily?L("Бросить вызов другу","Challenge a friend"):L("Поделиться результатом","Share result")}</button><button class="go" id="again">${L("Ещё раз","Play again")}</button></div><div class="toast" id="toast"></div>
      <div class="rows">${s.res.map(r=>`<div class="rrow"><span class="thumb">${imgTag(r.it)}</span><div>${tr(r.it.name)} · ${tr(r.it.place)}, ${r.it.year}<br><small class="muted">${L("вы","you")}: ${fmt(r.g,r.it.cur)} · ${L("правда","actual")}: ${fmt(r.it.price,r.it.cur)}</small></div><b>${GR[r.gr].sq} +${r.pts}</b></div>`).join("")}</div></section></div>`;
-   $("#again").onclick=()=>this.start(this.el);$("#copy").onclick=()=>copyText(share,$("#toast"))}
+   $("#again").onclick=()=>this.start(this.el);$("#copy").onclick=()=>copyText(share,$("#toast"),daily?{g:"price",s:s.total,d:dayNo()}:null)}
 };
 
 /* ================= Игра: Машина времени (угадай год по цене) ================= */
@@ -1928,14 +1943,15 @@ const TimelineGame={rounds:3,size:5,cat:store.get("tl_cat","all"),
    <ul class="ticks small"><li>${L(`${this.rounds} зала по ${this.size} вещей`,`${this.rounds} rooms, ${this.size} exhibits each`)}</li><li>${L("С каждым залом годы всё ближе друг к другу","Each room is harder: the release years get closer together")}</li><li>${L("200 очков за каждую вещь на своём месте и +200, если весь зал без ошибок","200 points for each exhibit in the right slot, +200 for a perfect room")}</li></ul>
    <div class="label" style="margin-top:12px">${L("Тема","Topic")}</div>
    <div class="tlcats" role="group" aria-label="${L("Тема","Topic")}">${TL_CATS.map(([id,nm,ic])=>{const n=id==="all"?POOL("timeline").length:POOL("timeline").filter(i=>i.cat===id).length;return `<button type="button" class="chip tlc${this.cat===id?" on":""}" data-cat="${id}" aria-pressed="${this.cat===id}">${ic} ${tr(nm)} <small>${n}</small></button>`}).join("")}</div>
-   <button class="go" id="go">${L("Открыть первый зал","Open the first room")}</button></section></div>`;
+   <div class="dsplit">${(()=>{const d=store.get("dtl_"+dayIdx(),null);return `<button class="go" id="daily" ${d?"disabled":""}>${d?L("Вызов дня сыгран","Daily played")+" · "+ru(d.total):L("Вызов дня","Daily")+" #"+dayNo()+" · "+L("3 зала","3 rooms")}</button>`})()}<button id="go">${L("Свободная игра","Free play")}</button></div><p class="note small">${L("Вызов дня одинаковый для всех игроков, тема не важна.","The daily is the same for everyone, topic ignored.")}</p></section></div>`;
    this.el.querySelectorAll(".tlc").forEach(b=>b.onclick=()=>{this.cat=b.dataset.cat;store.set("tl_cat",this.cat);this.el.querySelectorAll(".tlc").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on)})});
-   $("#go").onclick=()=>this.round()},
+   $("#go").onclick=()=>{this.daily=false;this.round()};$("#daily").onclick=()=>{this.daily=true;this.round()}},
  /* каждый зал сложнее: годы всё ближе друг к другу (без ограничения, окно 25 лет, окно 12 лет) */
- pickSet(){const W=[999,25,12][Math.min(this.s?.i||0,2)],pool=POOL("timeline").filter(i=>this.cat==="all"||i.cat===this.cat);
-   for(let t=0;t<60;t++){const a=pool[Math.floor(Math.random()*pool.length)],lo=a.year-Math.floor(Math.random()*W),out=[],yrs=new Set();
-     for(const it of shuffle(pool)){if(it.year>=lo&&it.year<=lo+W&&!yrs.has(it.year)){out.push(it);yrs.add(it.year)}if(out.length===this.size)return out}}
-   const out=[],yrs=new Set();for(const it of shuffle(pool)){if(!yrs.has(it.year)){out.push(it);yrs.add(it.year)}if(out.length===this.size)break}return out},
+ pickSet(){const W=[999,25,12][Math.min(this.s?.i||0,2)],daily=this.daily,rnd=daily?seeded(dayIdx()*131+(this.s?.i||0)*17+5):Math.random;
+   const pool=POOL("timeline").filter(i=>daily||this.cat==="all"||i.cat===this.cat);if(daily)pool.sort((a,b)=>a.id<b.id?-1:1);
+   for(let t=0;t<60;t++){const a=pool[Math.floor(rnd()*pool.length)],lo=a.year-Math.floor(rnd()*W),out=[],yrs=new Set();
+     for(const it of shuffle(pool,rnd)){if(it.year>=lo&&it.year<=lo+W&&!yrs.has(it.year)){out.push(it);yrs.add(it.year)}if(out.length===this.size)return out}}
+   const out=[],yrs=new Set();for(const it of shuffle(pool,rnd)){if(!yrs.has(it.year)){out.push(it);yrs.add(it.year)}if(out.length===this.size)break}return out},
  round(){this.set=this.pickSet();this.order=Array(this.size).fill(null);this.draw()},
  place(id,k){const ord=this.order,it=this.set.find(x=>x.id===id),from=ord.findIndex(x=>x&&x.id===id);
    if(k==null){if(from>=0)ord[from]=null}
@@ -1958,11 +1974,12 @@ const TimelineGame={rounds:3,size:5,cat:store.get("tl_cat","all"),
    $("#undo").onclick=()=>{this.order=Array(this.size).fill(null);this.draw()};
    $("#check").onclick=()=>{let correct=0;ord.forEach((it,k)=>{if(it.id===sorted[k].id)correct++});const pts=correct*200+(correct===this.size?200:0);s.total+=pts;s.res.push({correct,pts});this.draw({correct,pts})}},
  finish(){const s=this.s,st=logGame("timeline",s.total),max=this.rounds*(this.size*200+200);const grid=s.res.map(r=>r.correct===this.size?"🟩":r.correct>=3?"🟨":"🟥").join("");
-   const share=`${(CFG.BRAND_EN||"Erascope")} · ${this.title()} ${ru(s.total)}/${ru(max)}\n${grid}`;
+   const daily=this.daily,streak=daily?bumpDStreak():0;if(daily){store.set("dtl_"+dayIdx(),{total:s.total,max,grid});CAP.track("daily_done","timeline",dayNo())}
+   const share=daily?`Erascope #${dayNo()} · ${this.title()}\n${grid} ${ru(s.total)}/${ru(max)}\n🔥 ${streak}`:`${(CFG.BRAND_EN||"Erascope")} · ${this.title()} ${ru(s.total)}/${ru(max)}\n${grid}`;
    this.el.innerHTML=`<div class="col">${gameHead(this.title())}<section class="card final"><div class="label">${L("Музей открыт","The museum is open")}</div><div class="total">${ru(s.total)}</div>
    <div class="muted">${L("из","of")} ${ru(max)} · ${L("рекорд","best")} ${ru(st.best)}</div><div class="grid">${grid}</div>${hiBlock(st,s.total,[L(`Залов без единой ошибки: ${s.res.filter(r=>r.correct===this.size).length} из ${this.rounds}.`,`Perfect rooms: ${s.res.filter(r=>r.correct===this.size).length} of ${this.rounds}.`)],L("🟩 весь зал верно · 🟨 3–4 на месте · 🟥 меньше","🟩 whole room right · 🟨 3–4 in place · 🟥 fewer"))}
-   <div class="btns"><button id="copy">${L("Поделиться","Share")}</button><button class="go" id="again">${L("Ещё раз","Play again")}</button></div><div class="toast" id="toast"></div></section></div>`;
-   $("#again").onclick=()=>this.start(this.el);$("#copy").onclick=()=>copyText(share,$("#toast"))}
+   ${daily?dailyLoop(streak)+chResult("timeline",s.total):""}<div class="btns"><button id="copy">${daily?L("Бросить вызов другу","Challenge a friend"):L("Поделиться","Share")}</button><button class="go" id="again">${L("Ещё раз","Play again")}</button></div><div class="toast" id="toast"></div></section></div>`;
+   $("#again").onclick=()=>this.start(this.el);$("#copy").onclick=()=>copyText(share,$("#toast"),daily?{g:"timeline",s:s.total,d:dayNo()}:null)}
 };
 
 /* ================= Игра: Голос улицы ================= */
@@ -2265,7 +2282,8 @@ function homeGames(){const w=weekMode();const g=id=>GAMES.find(x=>x.id===id);ret
 function accuracy(g){return g.n?Math.round((g.hit+g.close)/g.n*100):0}
 function hub(el){const s=stats(),lv=levelOf(s.xp||0),daily=store.get("daily_"+dayIdx(),null);const plays=Object.values(s.games).reduce((a,x)=>a+x.plays,0);
   const eras=[[6,"2013","Гонконг","Hong Kong"],[34,"1971","Париж","Paris"],[57,"1957","Лондон","London"],[84,L("80 н. э.","80 AD"),"Рим","Rome"]];
-  el.innerHTML=`<div class="wide">
+  const dd=k=>store.get(k+"_"+dayIdx(),null);const todays=[["where","daily",L("Где и когда","Where & When")],["price","dprice",L("Цена","Price")],["timeline","dtl",L("Хронолог","Timeline")]];
+  el.innerHTML=`<div class="wide">${chBanner()}
   <section class="hero2"><img src="${photo("eras")}" alt="${L("Один город через эпохи: от Гонконга наших дней до античного Рима","One city through the ages: from modern Hong Kong to ancient Rome")}">
     <div class="hero2-in"><div class="label" style="color:#E8E4DA">${L("Угадайте место, год и цену по деталям прошлого","Guess the place, the year and the price from details of the past")}</div>
       <h1>${L("Где и когда<br>это было?","Where and when<br>was this?")}</h1>
@@ -2273,6 +2291,7 @@ function hub(el){const s=stats(),lv=levelOf(s.xp||0),daily=store.get("daily_"+da
       <div class="hero2-cta">${daily?`<div class="dailydone">Erascope #${dayNo()} · ${L("вызов дня пройден","daily done")}</div><div class="dstat">${daily.grid?`<span class="g">${daily.grid}</span>`:""}<span>${ru(daily.total)}</span>${dStreak()?`<span>🔥 ${dStreak()}</span>`:""}<span>${L("Следующий через","Next in")} <b class="cdown">${cdText()}</b></span></div><a class="btn go" href="#stats">${L("Рейтинг дня","Today's leaderboard")}</a><a class="btn ghost-l" href="#games" id="toGames">${L("Ещё игры","More games")} ↓</a>`
         :`<a class="btn go" href="#where" id="playDaily">${L("Играть вызов дня","Play daily")} #${dayNo()}</a>${dStreak()?`<span class="dailydone">🔥 ${dStreak()} · ${L("не прервите серию","keep your streak going")}</span>`:`<a class="btn ghost-l" href="#games" id="toGames">${L("Все игры","All games")} ↓</a>`}`}</div></div>
     <div class="eras" aria-hidden="true">${eras.map(([x,y,r,e])=>`<span style="left:${x}%"><b>${y}</b>${L(r,e)}</span>`).join("")}</div></section>
+  <section class="today"><span class="label">${L("Сегодня","Today")} #${dayNo()}</span>${todays.map(([id,k,nm])=>{const r=dd(k);return `<a class="tchip${r?" done":""}" href="#${id}">${r?"✓":"○"} ${nm}${r?` <b>${ru(r.total)}</b>`:""}</a>`}).join("")}<span class="tstreak">${dStreak()?`🔥 ${dStreak()} ${L(plural(dStreak(),"день","дня","дней"),dStreak()===1?"day":"days")}`:L("Серия начнётся с первого вызова","Your streak starts with the first daily")}</span></section>
   <div class="sectionhead" id="games"><h2>${L("Игры","Games")}</h2><span class="muted small">${L("Все бесплатно","All free")}</span></div>
   <div class="games g6">${homeGames().map((x,i)=>`<a class="gcard${i===0||x.big?" big":""}${x.week?" week":""}" href="#${x.id}"><span class="pic"><img src="${photo(x.img)}" alt="" loading="${i<2?"eager":"lazy"}"><span class="badges"><span class="badge${i===0||x.week?" a":""}">${x.week?L("Режим недели","Mode of the week"):tr(x.tag)}</span>${s.games[x.id]?`<span class="badge">${L("Рекорд","Best")} ${ru(s.games[x.id].best)}</span>`:""}</span></span>
     <div class="body"><h3>${x.title()}</h3><p>${tr(x.desc)}</p><span class="meta mono">${tr(x.meta)}</span></div></a>`).join("")}</div>
@@ -2374,6 +2393,9 @@ document.documentElement.lang=LANG;route();CAP.init();
     src=/itch\.(io|zone)/.test(h+" "+r)?"itch":/reddit/.test(r)?"reddit":/t\.me|telegram/.test(r)?"telegram":/google/.test(r)?"google":/instagram/.test(r)?"instagram":/threads/.test(r)?"threads":/facebook|fb\./.test(r)?"facebook":/(^|\.)x\.com|twitter|t\.co$/.test(r)?"x":/vk\.com/.test(r)?"vk":r&&r!==h?"other:"+r.slice(0,30):"direct"}
   let isNew=1;try{isNew=localStorage.getItem("pk_seen")?0:1;localStorage.setItem("pk_seen","1")}catch(e){}
   CAP.track("visit",src.slice(0,20),isNew)})();
+/* время в игре: только вехи активного времени на вкладке (30 с, 1, 2, 5, 10, 20 мин), без личных данных */
+(()=>{let act=0,last=Date.now(),vis=!document.hidden,mi=0;const M=[30,60,120,300,600,1200];const tick=()=>{const n=Date.now();if(vis)act+=(n-last)/1e3;last=n;while(mi<M.length&&act>=M[mi]){CAP.track("time",null,M[mi]);mi++}};
+  document.addEventListener("visibilitychange",()=>{tick();vis=!document.hidden;last=Date.now()});setInterval(tick,5000)})();
 </script>
 
 </body>
