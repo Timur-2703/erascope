@@ -126,6 +126,10 @@ button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:va
 .dsplit{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.dsplit button{flex:1 1 160px}
 .today{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin:14px 0 4px}.tchip{padding:7px 12px;border:1px solid var(--line,#444);border-radius:999px;color:var(--fg);text-decoration:none;font-size:14px}.tchip.done{border-color:var(--amber);color:var(--amber)}.tchip b{font-family:var(--mono);margin-left:4px}.tstreak{margin-left:auto;font-size:14px;color:var(--muted)}
 .duelrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dcard{display:flex;flex-direction:column;gap:6px;padding:8px;background:var(--panel);border:2px solid var(--line);border-radius:10px;color:var(--fg);text-align:left;cursor:pointer;font:inherit}.dcard img{width:100%;aspect-ratio:4/3;object-fit:contain;background:#1a1d23;border-radius:6px}.dcard .dn{font-weight:700}.dcard .dd{font-size:12px;color:var(--muted)}.dcard .dv{font-family:var(--mono);color:var(--amber);min-height:1.3em}.dcard.ok{border-color:#6fbf73}.dcard.bad{border-color:#d9534f}.bigscore{font-size:64px;text-align:center;margin:0;color:var(--amber)}
+.suspl{display:flex;flex-direction:column;gap:8px}.sp{border:1px solid var(--line);border-radius:10px;overflow:hidden}.sp.open{border-color:var(--amber)}
+.sph{display:flex;gap:10px;align-items:center;width:100%;padding:10px;background:none;border:0;color:var(--fg);text-align:left;cursor:pointer;font:inherit}.sph img,.sph .noimg{width:48px;height:48px;border-radius:8px;object-fit:cover;flex:none;display:flex;align-items:center;justify-content:center;background:#1a1d23;font-weight:700}.spt{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.sppanel{display:flex;flex-direction:column;gap:8px;padding:0 10px 12px}.qbtn{text-align:left;padding:10px 12px}.ansrow{border-left:3px solid var(--amber);padding-left:10px}.ansrow p{margin:2px 0 0}
+.evs{display:flex;flex-direction:column;gap:8px}.evs.pick .fact{text-align:left;cursor:pointer;border:1px solid var(--line);font:inherit;color:var(--fg)}.evs.pick .fact.on{border-color:var(--amber);background:rgba(232,168,56,.12)}
 .dloop{display:grid;gap:6px;justify-items:center;margin:4px 0 2px;text-align:center}.dloop .fire{font-size:18px}.dloop .fire b{font-size:22px;color:var(--amber)}.drank{font-size:16px;font-weight:600;color:var(--fg)}.drank:empty{display:none}
 .dstat{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-family:var(--mono);font-size:13px;color:#E8E4DA}.dstat .g{letter-spacing:1px}
 .hilites{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px;text-align:left}.hilites li{padding:8px 12px;background:var(--panel2);border-radius:6px;font-size:15px;line-height:1.4}.hilites li.rec{color:#111;background:var(--amber);font-weight:600}
@@ -2212,50 +2216,73 @@ const CASEFILES=[{id:"mona",title:W("Улыбка пропала","The Vanished 
   {img:WM("thumb/d/d1/Two_men_carry_the_Mona_Lisa_back_to_the_Louvre_in_January_1914.jpg/960px-Two_men_carry_the_Mona_Lisa_back_to_the_Louvre_in_January_1914.jpg"),t:W("4 января 1914 года «Джоконда» вернулась в Лувр. До кражи её знали ценители, после — весь мир. Перуджу осудили на год и 15 дней, отсидел он семь месяцев.","On 4 January 1914 the Mona Lisa returned to the Louvre. Before the theft connoisseurs knew it; after it, the whole world did. Peruggia got a year and 15 days and served seven months.")}]
 }];
 
+/* ===== «Допрос и версии»: улики с места кражи + досье подозреваемых (реплики и досье — реконструкция по материалам дела) ===== */
+const CASE_DOSSIER={budget:9,
+ ev:[
+  {id:"hooks",strong:1,text:W("Четыре пустых крюка. Вчера был понедельник: музей закрыт для публики, внутри работали только рабочие.","Four bare hooks. Yesterday was a Monday: the museum was closed to the public and only workmen were inside.")},
+  {id:"glass",strong:1,text:W("Стеклянный короб открыт аккуратно, без царапин. На стекле отпечаток большого пальца левой руки.","The glass case was opened neatly, without a scratch. On the glass: a left thumbprint.")},
+  {id:"plumber",strong:1,text:W("Водопроводчик: «Человек в белом халате стоял у запертой служебной двери. Невысокий, усы. Я отпер ему».","The plumber: “A man in a white smock stood at the locked service door. Short, moustache. I let him out.”")},
+  {id:"crew",strong:1,text:W("Счёт подрядчика: в прошлом году стеклянные короба в Лувре ставила наёмная бригада. Половина бригады — итальянцы.","A contractor's invoice: last year a hired crew fitted the Louvre's glass cases. Half the crew were Italians.")},
+  {id:"guard",text:W("Смотритель заметил пустую стену, но решил, что картину унесли фотографировать.","A guard noticed the empty wall but assumed the painting had been taken away to be photographed.")},
+  {id:"keys",text:W("Шкаф с ключами от залов: замок цел, все ключи на месте.","The cabinet of gallery keys: the lock is intact, every key in place.")}],
+ line:[W("Художник, Монмартр","Painter, Montmartre"),W("Поэт","Poet"),W("Художник-копиист","Copyist painter"),W("Рабочий-ремесленник","Skilled workman"),W("Служащий музея","Museum employee")],
+ q:[W("Кто вы и чем занимаетесь?","Who are you and what do you do?"),W("Что вас связывает с Лувром?","What connects you to the Louvre?"),W("Что о вас известно полиции?","What does the police know about you?")],
+ qa:[
+  [W("Пабло Пикассо, 29 лет, испанец. Художник на Монмартре.","Pablo Picasso, 29, Spanish. A painter in Montmartre."),
+   W("Купил две древние иберийские статуэтки, которые секретарь Аполлинера вынес из Лувра.","Bought two ancient Iberian statuettes that Apollinaire's secretary had carried out of the Louvre."),
+   W("В сентябре 1911 года допрошен по делу о статуэтках и отпущен. К служебной двери Лувра в понедельник его ничто не привязывает.","Questioned in September 1911 about the statuettes and released. Nothing ties him to the Louvre's service door on that Monday.")],
+  [W("Гийом Аполлинер, 31 год, поэт. Родился в Риме.","Guillaume Apollinaire, 31, a poet. Born in Rome."),
+   W("Его бывший секретарь выносил из Лувра статуэтки. Сам Аполлинер там не работал.","His former secretary had walked statuettes out of the Louvre. Apollinaire himself never worked there."),
+   W("В сентябре 1911 года арестован по делу о статуэтках и вскоре освобождён. К краже картины его ничто не привязывает.","Arrested in September 1911 over the statuettes and soon released. Nothing ties him to the theft of the painting.")],
+  [W("Луи Беру, француз, художник-копиист.","Louis Béroud, a French copyist painter."),
+   W("Часто работает в Лувре и первым поднял тревогу, когда увидел пустую стену.","Often works in the Louvre and was the first to raise the alarm on seeing the empty wall."),
+   W("Копиистов пускают только в часы работы музея. В понедельник Лувр был закрыт, и он пришёл только во вторник.","Copyists are admitted only in opening hours. The Louvre was closed on Monday and he came only on Tuesday.")],
+  [W("Винченцо Перуджа, 30 лет, из Ломбардии. Маляр-декоратор, работает со стеклом.","Vincenzo Peruggia, 30, from Lombardy. A decorator who works with glass."),
+   W("В 1908 году работал в Лувре в бригаде, которая ставила защитные стеклянные короба. Служебные ходы знает.","In 1908 he worked at the Louvre in the crew that fitted protective glass cases. He knows the service passages."),
+   W("Рост 160 см, усы. С 1909 года в картотеке полиции: фото и отпечатки.","Height 160 cm, moustache. In the police files since 1909: photo and prints.")],
+  [W("Смотритель зала, 12 лет службы (собирательный образ).","A gallery guard, twelve years' service (a composite character)."),
+   W("Служит в Лувре. Утром в день кражи на час отходил от зала.","Employed by the Louvre. Stepped away from the gallery for an hour on the morning of the theft."),
+   W("В картотеке не значится. Шкаф с ключами цел: замок никто не вскрывал.","Not in the police files. The key cabinet is intact: nobody picked the lock.")]]};
+
 let DIO=null;
 const CaseGame={
  title:()=>L("Дело","Case Files"),
- start(el){this.el=el;this.c=CASEFILES[0];this.s={at:this.c.start,moves:this.c.moves,found:{},wrong:0,tried:{},log:[]};this.intro()},
- head(){const s=this.s;return gameHead(this.title(),`<span class="chip">${L("Ходы","Moves")}: ${s.moves}</span><span class="chip a">${L("Улики","Clues")}: ${Object.keys(s.found).length}</span>`)},
+ start(el){this.el=el;this.c=CASEFILES[0];this.d=CASE_DOSSIER;this.s={left:this.d.budget,asked:{},open:null,pick:[],log:[]};this.intro()},
+ head(){const s=this.s;return gameHead(this.title(),`<span class="chip">${L("Вопросы","Questions")}: ${s.left}/${this.d.budget}</span>`)},
  intro(){const c=this.c;this.el.innerHTML=`<div class="col">${gameHead(this.title())}<div class="intro"><img src="${c.cover}" alt=""></div>
    <section class="card"><div class="label">${L("По реальному делу","Based on a real case")} · 1911–1913</div><h2 class="ctitle">${tr(c.title)}</h2><p class="story">${tr(c.brief)}</p>
-   <ul class="ticks small"><li>${L(`Осматривайте место: крутите сцену и нажимайте на метки «?». Времени хватает только на ${3} осмотра, и часть улик — пустышки`,`Search each scene: turn around and tap the ? markers. You only have time for 3 looks, and some clues are dead ends`)}</li><li>${L("Выберите, куда ехать дальше. Каждый ложный след сжигает ход","Pick where to go next. Every false lead burns a move")}</li><li>${L(`У вас ${c.moves} ходов. В конце — пятеро подозреваемых. Арестуйте того, на кого указывают улики`,`You have ${c.moves} moves. At the end there are five suspects. Arrest the one the clues point to`)}</li></ul>
-   <button class="go" id="go">${L("Взять дело","Take the case")}</button><p class="small muted">${L("Сцены — 3D-реконструкции. Картины на стенах и фотографии участников настоящие.","Scenes are 3D reconstructions. The paintings on the walls and the photos of the people are real.")}</p></section></div>`;
-   $("#go").onclick=()=>{CAP.track("case_start","case");this.stop()}},
- stop(){scrollTo(0,0);const s=this.s,st=this.c.stops[s.at];const n=st.hots.length,f=st.hots.filter(h=>s.found[s.at+":"+h.id]).length;
-   this.el.innerHTML=`<div class="col">${this.head()}<div class="cplace"><b>${tr(st.place)}</b><span class="mono">${tr(st.when)}</span></div>
-   <div class="dio" id="dio"><span class="tagx dtag">${L("Тяните, чтобы осмотреться · жмите на «?»","Drag to look around · tap a ?")}</span><span class="tagx dcount">${L("Осмотров","Looks")} ${Math.max(0,this.c.looks-f)}/${this.c.looks}</span></div>
-   <div class="clues" id="clues">${st.hots.filter(h=>s.found[s.at+":"+h.id]).map(h=>`<div class="fact">${esc(tr(h.text))}</div>`).join("")||`<p class="small muted">${L(`Меток больше, чем времени: осмотреть можно только ${this.c.looks}. Не все улики полезны.`,`There are more markers than time: you can only examine ${this.c.looks}. Not every clue helps.`)}</p>`}</div>
-   <div class="actbar"><button class="go" id="onw" ${f<2?"disabled":""}>${st.ask?L("Куда дальше?","Where next?"):L("К аресту","Make the arrest")}</button></div></div>`;
-   const box=$("#dio");CURV?.clear();let dio=null;try{dio=Diorama(box,{...st.scene,hots:st.hots},id=>this.hot(id))}catch(e){box.insertAdjacentHTML("beforeend",`<p class="small">${L("3D недоступно на этом устройстве","3D isn't available on this device")}</p>`)}
-   CURV={clear(){dio?.clear()}};this.dio=null;if(dio){for(const h of st.hots)if(s.found[s.at+":"+h.id])dio.mark(h.id);if(f>=this.c.looks)dio.rest()}DIO=dio;
-   $("#onw").onclick=()=>st.ask?this.choose():this.finale()},
- hot(id){const s=this.s,st=this.c.stops[s.at],k=s.at+":"+id;if(s.found[k])return false;if(st.hots.filter(x=>s.found[s.at+":"+x.id]).length>=this.c.looks)return false;s.found[k]=1;const h=st.hots.find(x=>x.id===id);
-   const cl=$("#clues");if(cl){if(!cl.querySelector(".fact"))cl.innerHTML="";cl.insertAdjacentHTML("afterbegin",`<div class="fact new">${esc(tr(h.text))}</div>`)}
-   const f=st.hots.filter(x=>s.found[s.at+":"+x.id]).length;const dc=document.querySelector(".dcount");if(dc)dc.textContent=`${L("Осмотров","Looks")} ${Math.max(0,this.c.looks-f)}/${this.c.looks}`;if(f>=this.c.looks)DIO?.rest();
-   const hc=this.el.querySelector(".hud .chip.a");if(hc)hc.textContent=`${L("Улики","Clues")}: ${Object.keys(s.found).length}`;if(f>=2)$("#onw").disabled=false;navigator.vibrate?.(10)},
- choose(msg){scrollTo(0,0);const s=this.s,st=this.c.stops[s.at];
-   this.el.innerHTML=`<div class="col">${this.head()}${msg||""}<section class="card"><div class="label">${tr(st.place)}</div><h3>${tr(st.ask)}</h3>
-   <div class="leads">${st.opts.map((o,i)=>`<button class="lead${s.tried[s.at+i]?" used":""}" data-i="${i}" ${s.tried[s.at+i]?"disabled":""}>${tr(o.label)}</button>`).join("")}</div>
-   <p class="small muted">${L("Неверный след стоит одного хода.","A wrong lead costs one move.")}</p></section></div>`;
-   this.el.querySelectorAll(".lead").forEach(b=>b.onclick=()=>this.pick(+b.dataset.i))},
- pick(i){const s=this.s,st=this.c.stops[s.at],o=st.opts[i];s.tried[s.at+i]=1;
-   if(o.to){s.log.push("🟩");const hot=tr(o.hot);s.at=o.to;this.arrive(hot);return}
-   s.moves--;s.wrong++;s.log.push("🟥");if(s.moves<=0){this.end(false,L("Ходы кончились. След остыл, и вор ушёл.","You're out of moves. The trail went cold and the thief got away."));return}
-   this.choose(`<section class="card cold">${o.img?`<img class="leadimg" src="${o.img}" alt="">`:""}<div class="verdict"><span class="chip r">${L("Холодно","Cold")} · −1 ${L("ход","move")}</span></div><p>${esc(tr(o.dead))}</p></section>`)},
- arrive(hot){this.stop();const c=this.el.querySelector(".cplace");if(c)c.insertAdjacentHTML("afterend",`<section class="card hotc"><span class="chip g">${L("Верный след","Right trail")}</span><p>${esc(hot)}</p></section>`)},
- finale(){scrollTo(0,0);const c=this.c;this.el.innerHTML=`<div class="col">${this.head()}<section class="card"><div class="label">${L("Финал","Showdown")}</div><h3>${L("Кого арестовать?","Who do you arrest?")}</h3>
-   <details class="notebook" open><summary>${L("Записная книжка","Notebook")} · ${Object.keys(this.s.found).length}</summary>${Object.entries(c.stops).map(([k,st])=>st.hots.filter(h=>this.s.found[k+":"+h.id]).map(h=>`<div class="fact"><span class="mono small muted">${tr(st.place)}</span><br>${esc(tr(h.text))}</div>`).join("")).join("")}</details>
-   <div class="suspects">${c.suspects.map((p,i)=>`<button class="susp" data-i="${i}">${p.img?`<img src="${p.img}" alt="">`:`<span class="noimg">${p.ini||tr(p.name).split(" ").map(x=>x[0]).join("").slice(0,2)}</span>`}<b>${tr(p.name)}</b><span class="small">${tr(p.line)}</span>${p.cr?`<span class="credit">${p.cr}</span>`:""}</button>`).join("")}</div></section></div>`;
-   this.el.querySelectorAll(".susp").forEach(b=>b.onclick=()=>{const p=c.suspects[+b.dataset.i];this.s.log.push(p.guilty?"👤✅":"👤❌");p.guilty?this.end(true):this.end(false,L(`Вы арестовали не того: ${tr(p.name)} ни при чём. Настоящий вор успел скрыться.`,`Wrong person: ${tr(p.name)} had nothing to do with it. The real thief slipped away.`))})},
- end(won,why){scrollTo(0,0);const s=this.s,c=this.c;const clues=Object.keys(s.found).length;const pts=won?Math.min(10000,3000+s.moves*1000+clues*250):clues*100;
-   const st=logGame("case",pts);const grid=s.log.join("");const share=`🕵️ Erascope · ${tr(c.title)}\n${won?L(`Пойман, осталось ходов: ${s.moves}`,`Caught with ${s.moves} moves to spare`):L("Вор ушёл","The thief got away")}\n${grid}`;
+   <ul class="ticks small"><li>${L("Прочитайте улики с места кражи","Read the evidence from the scene")}</li><li>${L(`Допросите подозреваемых: на всё у вас ${this.d.budget} вопросов`,`Question the suspects: you only have ${this.d.budget} questions`)}</li><li>${L("Арестуйте виновного и назовите две улики против него","Arrest the culprit and name two pieces of evidence against them")}</li></ul>
+   <button class="go" id="go">${L("Взять дело","Take the case")}</button><p class="small muted">${L("Реплики и досье — реконструкция по материалам дела. Фотографии настоящие.","Statements and dossiers are reconstructed from the case record. The photos are real.")}</p></section></div>`;
+   $("#go").onclick=()=>{CAP.track("case_start","case");this.board()}},
+ board(){const y=scrollY,s=this.s,c=this.c,d=this.d;
+   const asked3=d.budget-s.left;const susp=(p,i)=>{const n=Object.keys(s.asked).filter(k=>k.startsWith(i+":")).length,open=s.open===i;
+     const face=p.img?`<img src="${p.img}" alt="">`:`<span class="noimg">${p.ini||tr(p.name).split(" ").map(x=>x[0]).join("").slice(0,2)}</span>`;
+     const panel=open?`<div class="sppanel">${d.q.map((q,k)=>{const a=s.asked[i+":"+k];return a?`<div class="ansrow"><span class="small muted">${tr(q)}</span><p>${esc(tr(d.qa[i][k]))}</p></div>`:`<button class="qbtn" data-i="${i}" data-k="${k}" ${s.left<1?"disabled":""}>${tr(q)} <span class="mono small">−1</span></button>`}).join("")}<button class="go arrest" data-i="${i}" ${asked3<3?"disabled":""}>${L("Арестовать","Arrest")}</button>${asked3<3?`<p class="small muted">${L("Для ареста нужны основания: задайте хотя бы 3 вопроса.","An arrest needs grounds: ask at least 3 questions first.")}</p>`:""}</div>`:"";
+     return `<div class="sp${open?" open":""}"><button class="sph" data-i="${i}" aria-expanded="${open}">${face}<span class="spt"><b>${tr(p.name)}</b><span class="small muted">${tr(d.line[i])}</span></span><span class="mono small">${n}/3</span></button>${panel}</div>`};
+   this.el.innerHTML=`<div class="col">${this.head()}<section class="card"><div class="label">${L("Улики с места кражи","Evidence from the scene")}</div><div class="evs">${d.ev.map(e=>`<div class="fact">${esc(tr(e.text))}</div>`).join("")}</div>
+     <p class="small muted">${L("Не всё из этого указывает на преступника.","Not all of this points to the culprit.")}</p></section>
+     <section class="card"><div class="label">${L("Допрос","Interrogation")}</div><div class="suspl">${c.suspects.map(susp).join("")}</div></section></div>`;
+   this.el.querySelectorAll(".sph").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;s.open=s.open===i?null:i;this.board()});
+   this.el.querySelectorAll(".qbtn").forEach(b=>b.onclick=()=>{if(s.left<1)return;s.left--;s.asked[b.dataset.i+":"+b.dataset.k]=1;s.log.push("❔");navigator.vibrate?.(10);this.board()});
+   this.el.querySelectorAll(".arrest").forEach(b=>b.onclick=()=>this.accuse(+b.dataset.i));
+   scrollTo(0,y)},
+ accuse(i){scrollTo(0,0);const s=this.s,d=this.d,p=this.c.suspects[i];s.pick=[];
+   this.el.innerHTML=`<div class="col">${this.head()}<section class="card"><div class="label">${L("Обвинение","The charge")}</div><h3>${L("Арестовать","Arrest")}: ${tr(p.name)}</h3>
+     <p class="story">${L("Какие две улики указывают на этого человека?","Which two pieces of evidence point to this person?")}</p>
+     <div class="evs pick">${d.ev.map((e,k)=>`<button type="button" class="fact evb" data-k="${k}" aria-pressed="false">${esc(tr(e.text))}</button>`).join("")}</div>
+     <div class="btns"><button id="back">${L("Назад","Back")}</button><button class="go" id="ok" disabled>${L("Предъявить обвинение","Press charges")}</button></div></section></div>`;
+   const ok=$("#ok");this.el.querySelectorAll(".evb").forEach(b=>b.onclick=()=>{const k=+b.dataset.k,at=s.pick.indexOf(k);if(at>=0)s.pick.splice(at,1);else if(s.pick.length<2)s.pick.push(k);
+     this.el.querySelectorAll(".evb").forEach(x=>{const on=s.pick.includes(+x.dataset.k);x.classList.toggle("on",on);x.setAttribute("aria-pressed",on)});ok.disabled=s.pick.length!==2});
+   $("#back").onclick=()=>this.board();ok.onclick=()=>this.end(i)},
+ end(i){scrollTo(0,0);const s=this.s,c=this.c,d=this.d,p=c.suspects[i],won=!!p.guilty,asked=d.budget-s.left,good=s.pick.every(k=>d.ev[k].strong);
+   const pts=won?3000+s.left*400+(good?1500:0):asked*100;const st=logGame("case",pts);CAP.track("case_end",won?"win":"lose",pts);
+   const grid=s.log.join("")+(won?"👤✅":"👤❌");const share=`🕵️ Erascope · ${tr(c.title)}\n${won?L(`Виновный найден, вопросов: ${asked}`,`Culprit found, questions used: ${asked}`):L("Вор ушёл","The thief got away")}\n${grid}`;
+   const why=won?(good?L("Вы верно назвали виновного и верно выбрали улики против него.","You named the right culprit and picked the right evidence against him."):L("Виновный назван верно, но выбранные улики слабые: они не отличают его от других.","The culprit is right, but the evidence you picked is weak: it doesn't set him apart from the others.")):L(`Вы арестовали не того: ${tr(p.name)} ни при чём. Настоящий вор тем временем уехал из Парижа.`,`You arrested the wrong person: ${tr(p.name)} is innocent. The real thief left Paris in the meantime.`);
    this.el.innerHTML=`<div class="col">${gameHead(this.title())}<section class="card final"><div class="label">${tr(c.title)}</div><div class="total">${won?L("Пойман!","Caught!"):L("Ушёл","Got away")}</div>
-   <div class="muted">${ru(pts)} ${L("очков","pts")} · ${L("улик","clues")} ${clues} · ${L("ложных следов","false leads")} ${s.wrong}</div><div class="grid">${grid}</div>${why?`<p>${esc(why)}</p>`:""}
+   <div class="muted">${ru(pts)} ${L("очков","pts")} · ${L("вопросов","questions")} ${asked}</div><div class="grid">${grid}</div><p>${esc(why)}</p>
    ${hiBlock(st,pts,[],"")}<div class="btns"><button id="copy">${L("Поделиться","Share")}</button><button class="go" id="again">${L("Сыграть заново","Play again")}</button></div><div class="toast" id="toast"></div></section>
    <section class="card"><div class="label">${L("Как было на самом деле","What really happened")}</div><div class="truth">${c.truth.map(x=>`<figure><img src="${x.img}" alt="" loading="lazy"><figcaption>${esc(tr(x.t))}</figcaption></figure>`).join("")}</div>
-   <p class="small muted">${L("Фото: Wikimedia Commons, общественное достояние. Реплики свидетелей и сцены — реконструкция по материалам дела.","Photos: Wikimedia Commons, public domain. Witness lines and scenes are reconstructions based on the case record.")}</p></section>
-   <section class="card"><div class="label">${L("Скоро","Coming next")}</div><p class="small">${L("Следующие дела: Тифлисское ограбление 1907 года и побег Ронни Биггса 1963–1970.","Next cases: the Tiflis bank robbery of 1907 and Ronnie Biggs's escape, 1963–1970.")}</p></section></div>`;
+   <p class="small muted">${L("Фото: Wikimedia Commons, общественное достояние. Реплики и досье — реконструкция по материалам дела.","Photos: Wikimedia Commons, public domain. Statements and dossiers are reconstructed from the case record.")}</p></section></div>`;
    $("#again").onclick=()=>this.start(this.el);$("#copy").onclick=()=>copyText(share,$("#toast"))}
 };
 
@@ -2303,7 +2330,7 @@ const GAMES=[
  {id:"price",title:()=>PriceGame.title(),desc:W("Перед вами предмет, страна и год. Угадайте, сколько он тогда стоил в долларах США.","An item, a country and a year. Guess what it cost back then, in US dollars."),meta:W("10 вещей · ~3 мин","10 items · ~3 min"),tag:W("Цены","Prices"),img:"mac",run:PriceGame},
  {id:"travel",title:()=>TravelGame.title(),desc:W("Вам известны предмет, страна и цена. Определите год и сохраните заряд машины времени.","You know the item, the country and the price. Work out the year and keep the time machine charged."),meta:W("8 прыжков · ~3 мин","8 jumps · ~3 min"),tag:W("Годы","Years"),img:"g4",run:TravelGame},
  {id:"timeline",title:()=>TimelineGame.title(),desc:W("Расположите вещи от самой ранней к самой поздней по году выхода в продажу.","Put the exhibits in order, from earliest to latest release."),meta:W("3 зала · ~2 мин","3 rooms · ~2 min"),tag:W("Логика","Logic"),img:"cover_timeline",run:TimelineGame},
- {id:"case",title:()=>CaseGame.title(),desc:W("Погоня по реальному делу: осматривайте 3D-сцены, собирайте улики и выберите, кого арестовать. Первое дело — кража «Джоконды», 1911 год.","Chase a real case: search 3D scenes, gather clues and choose whom to arrest. First case: the theft of the Mona Lisa, 1911."),meta:W("Реальное дело · ~6 мин","Real case · ~6 min"),tag:W("Новое","New"),img:WM("1/19/Louis_Beroud_-_Mona_Lisa_au_Louvre_1911.jpg"),run:CaseGame},
+ {id:"case",title:()=>CaseGame.title(),desc:W("Допросите подозреваемых, сопоставьте показания с уликами и арестуйте виновного. Первое дело: кража «Джоконды», 1911 год.","Question the suspects, weigh their statements against the evidence and arrest the culprit. First case: the theft of the Mona Lisa, 1911."),meta:W("Реальное дело · ~4 мин","Real case · ~4 min"),tag:W("Новое","New"),img:WM("1/19/Louis_Beroud_-_Mona_Lisa_au_Louvre_1911.jpg"),run:CaseGame},
  {id:"bag",title:()=>BagGame.title(),desc:W("Выберите покупки со скрытыми ценами. Побеждает тот, кто ближе всех к бюджету, не превышая его. Играйте по очереди на одном телефоне.","Pick shopping with hidden prices. Closest to the budget without going over wins. Take turns on one phone."),meta:W("2–6 игроков · ~10 мин","2–6 players · ~10 min"),tag:W("Для компании","Party"),img:"cover_bag",run:BagGame}
 ];
 const ALL_GAMES=GAMES;
