@@ -125,6 +125,7 @@ button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:va
 .chres{margin:8px 0;font-weight:600;text-align:center}.chres.win{color:#6fbf73}.chres.lose{color:var(--amber)}
 .dsplit{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.dsplit button{flex:1 1 160px}
 .today{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin:14px 0 4px}.tchip{padding:7px 12px;border:1px solid var(--line,#444);border-radius:999px;color:var(--fg);text-decoration:none;font-size:14px}.tchip.done{border-color:var(--amber);color:var(--amber)}.tchip b{font-family:var(--mono);margin-left:4px}.tstreak{margin-left:auto;font-size:14px;color:var(--muted)}
+.duelrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dcard{display:flex;flex-direction:column;gap:6px;padding:8px;background:var(--panel);border:2px solid var(--line);border-radius:10px;color:var(--fg);text-align:left;cursor:pointer;font:inherit}.dcard img{width:100%;aspect-ratio:4/3;object-fit:contain;background:#1a1d23;border-radius:6px}.dcard .dn{font-weight:700}.dcard .dd{font-size:12px;color:var(--muted)}.dcard .dv{font-family:var(--mono);color:var(--amber);min-height:1.3em}.dcard.ok{border-color:#6fbf73}.dcard.bad{border-color:#d9534f}.bigscore{font-size:64px;text-align:center;margin:0;color:var(--amber)}
 .dloop{display:grid;gap:6px;justify-items:center;margin:4px 0 2px;text-align:center}.dloop .fire{font-size:18px}.dloop .fire b{font-size:22px;color:var(--amber)}.drank{font-size:16px;font-weight:600;color:var(--fg)}.drank:empty{display:none}
 .dstat{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-family:var(--mono);font-size:13px;color:#E8E4DA}.dstat .g{letter-spacing:1px}
 .hilites{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px;text-align:left}.hilites li{padding:8px 12px;background:var(--panel2);border-radius:6px;font-size:15px;line-height:1.4}.hilites li.rec{color:#111;background:var(--amber);font-weight:600}
@@ -1668,16 +1669,13 @@ const WhereGame={
 };
 
 /* ================= Игра: Сколько стоило? ================= */
-const PriceGame={rounds:10,cat:store.get("pr_cat","all"),
+const PriceGame={rounds:10,cat:"all",
  start(el){this.el=el;this.intro()},
  poolOf(c){return c==="all"?POOL("price"):ITEMS.filter(i=>!TL_IDS.includes(i.id)&&srcOf(i)&&i.cat===c)},
  kinds(c){return new Set(this.poolOf(c).map(i=>i.series||i.id)).size},
  intro(){const cats=PR_CATS.filter(([id])=>this.kinds(id)>=6);if(!cats.some(c=>c[0]===this.cat))this.cat="all";
-   this.el.innerHTML=`<div class="col">${gameHead(this.title())}<section class="card"><div class="label">${L("Тема","Topic")}</div>
-   <p>${L("Вещи из разных лет: у каждой нужно угадать цену в долларах. Выберите тему, которая вам ближе.","Things from different years. Guess each price in US dollars. Pick the topic you like best.")}</p>
-   <div class="tlcats" role="group" aria-label="${L("Тема","Topic")}">${cats.map(([id,nm,ic])=>`<button type="button" class="chip tlc${this.cat===id?" on":""}" data-cat="${id}" aria-pressed="${this.cat===id}">${ic} ${tr(nm)} <small>${this.kinds(id)}</small></button>`).join("")}</div>
-   <div class="dsplit">${(()=>{const d=store.get("dprice_"+dayIdx(),null);return `<button class="go" id="daily" ${d?"disabled":""}>${d?L("Вызов дня сыгран","Daily played")+" · "+ru(d.total):L("Вызов дня","Daily")+" #"+dayNo()+" · "+L("5 лотов","5 items")}</button>`})()}<button id="go">${L("Свободная игра","Free play")}</button></div><p class="note small">${L("Вызов дня одинаковый для всех игроков, тема не важна.","The daily is the same for everyone, topic ignored.")}</p></section></div>`;
-   this.el.querySelectorAll(".tlc").forEach(b=>b.onclick=()=>{this.cat=b.dataset.cat;store.set("pr_cat",this.cat);this.el.querySelectorAll(".tlc").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on)})});
+   this.el.innerHTML=`<div class="col">${gameHead(this.title())}<section class="card"><p class="story">${L("Вещь, страна и год. Угадайте, сколько она тогда стоила в долларах США.","An item, a country and a year. Guess what it cost back then, in US dollars.")}</p>
+   <div class="dsplit">${(()=>{const d=store.get("dprice_"+dayIdx(),null);return `<button class="go" id="daily" ${d?"disabled":""}>${d?L("Вызов дня сыгран","Daily played")+" · "+ru(d.total):L("Вызов дня","Daily")+" #"+dayNo()+" · "+L("5 лотов","5 items")}</button>`})()}<button id="go">${L("Свободная игра","Free play")}</button></div><p class="note small">${L("Вызов дня одинаковый для всех игроков.","The daily is the same for everyone.")}</p></section></div>`;
    $("#go").onclick=()=>this.begin();$("#daily").onclick=()=>this.begin("daily")},
  begin(mode){const daily=mode==="daily";this.daily=daily;const pool=daily?[...POOL("price")].sort((a,b)=>a.id<b.id?-1:1):this.poolOf(this.cat);this.rounds=daily?5:Math.min(10,this.kinds(this.cat));this.s={q:pickItems(this.rounds,pool,2,daily?seeded(dayIdx()*7919+3):Math.random),i:0,total:0,res:[],t:{hit:0,close:0,miss:0}};this.round()},
  title:()=>L("Сколько стоило?","What Did It Cost?"),
@@ -1934,17 +1932,14 @@ const BagGame={
 };
 
 /* ================= Игра: Хронолог ================= */
-const TimelineGame={rounds:3,size:5,cat:store.get("tl_cat","all"),
+const TimelineGame={rounds:3,size:5,cat:"all",
  title:()=>L("Хронолог","Timeline"),
  start(el){this.el=el;this.s={i:0,total:0,res:[]};this.intro()},
  intro(){this.el.innerHTML=`<div class="col">${gameHead(this.title())}${introImg(photo("cover_timeline"))}
    <section class="card"><p class="story">${L("В музее перепутали таблички с годами. Перед вами вещи, у каждой есть год, когда она появилась: вышла в продажу, на экраны или в печать.","The museum mixed up its year labels. Each exhibit here has the year it first appeared: on sale, on screen or in print.")}</p>
    <p class="story">${L("Расставьте вещи от самой ранней к самой поздней. Зажмите карточку и перетащите её в любую ячейку. Можно и просто нажать: карточка встанет в первую свободную ячейку.","Put them in order from earliest to latest. Press and drag a card into any slot, or just tap it to fill the next empty slot.")}</p>
    <ul class="ticks small"><li>${L(`${this.rounds} зала по ${this.size} вещей`,`${this.rounds} rooms, ${this.size} exhibits each`)}</li><li>${L("С каждым залом годы всё ближе друг к другу","Each room is harder: the release years get closer together")}</li><li>${L("200 очков за каждую вещь на своём месте и +200, если весь зал без ошибок","200 points for each exhibit in the right slot, +200 for a perfect room")}</li></ul>
-   <div class="label" style="margin-top:12px">${L("Тема","Topic")}</div>
-   <div class="tlcats" role="group" aria-label="${L("Тема","Topic")}">${TL_CATS.map(([id,nm,ic])=>{const n=id==="all"?POOL("timeline").length:POOL("timeline").filter(i=>i.cat===id).length;return `<button type="button" class="chip tlc${this.cat===id?" on":""}" data-cat="${id}" aria-pressed="${this.cat===id}">${ic} ${tr(nm)} <small>${n}</small></button>`}).join("")}</div>
-   <div class="dsplit">${(()=>{const d=store.get("dtl_"+dayIdx(),null);return `<button class="go" id="daily" ${d?"disabled":""}>${d?L("Вызов дня сыгран","Daily played")+" · "+ru(d.total):L("Вызов дня","Daily")+" #"+dayNo()+" · "+L("3 зала","3 rooms")}</button>`})()}<button id="go">${L("Свободная игра","Free play")}</button></div><p class="note small">${L("Вызов дня одинаковый для всех игроков, тема не важна.","The daily is the same for everyone, topic ignored.")}</p></section></div>`;
-   this.el.querySelectorAll(".tlc").forEach(b=>b.onclick=()=>{this.cat=b.dataset.cat;store.set("tl_cat",this.cat);this.el.querySelectorAll(".tlc").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on)})});
+   <div class="dsplit">${(()=>{const d=store.get("dtl_"+dayIdx(),null);return `<button class="go" id="daily" ${d?"disabled":""}>${d?L("Вызов дня сыгран","Daily played")+" · "+ru(d.total):L("Вызов дня","Daily")+" #"+dayNo()+" · "+L("3 зала","3 rooms")}</button>`})()}<button id="go">${L("Свободная игра","Free play")}</button></div><p class="note small">${L("Вызов дня одинаковый для всех игроков.","The daily is the same for everyone.")}</p></section></div>`;
    $("#go").onclick=()=>{this.daily=false;this.round()};$("#daily").onclick=()=>{this.daily=true;this.round()}},
  /* каждый зал сложнее: годы всё ближе друг к другу (без ограничения, окно 25 лет, окно 12 лет) */
  pickSet(){const W=[999,25,12][Math.min(this.s?.i||0,2)],daily=this.daily,rnd=daily?seeded(dayIdx()*131+(this.s?.i||0)*17+5):Math.random;
@@ -2265,9 +2260,46 @@ const CaseGame={
 };
 
 /* ================= хаб ================= */
+
+/* ================= Игра: Дуэль (быстрая серия: две вещи, одно нажатие) ================= */
+const DuelGame={title:()=>L("Дуэль","Duel"),
+ start(el){this.el=el;this.begin()},
+ pool(kind){return ITEMS.filter(i=>i.year&&(kind==="year"||(i.cur==="USD"&&i.price>0)))},
+ pair(){const s=this.s,n=s.n;
+  for(let t=0;t<300;t++){const kind=Math.random()<.5?"year":"price",pl=this.pool(kind);if(pl.length<4)continue;
+   const a=pl[Math.floor(Math.random()*pl.length)],b=pl[Math.floor(Math.random()*pl.length)];
+   if(a===b||s.seen.includes(a.id)||s.seen.includes(b.id)||(a.series&&a.series===b.series))continue;
+   const gap=Math.max(2,Math.round(60*Math.pow(.9,n))),ratio=Math.max(1.2,3*Math.pow(.92,n));
+   if(kind==="year"?Math.abs(a.year-b.year)<gap:Math.max(a.price,b.price)/Math.min(a.price,b.price)<ratio)continue;
+   if(kind==="price"&&Math.abs(a.year-b.year)>45&&t<250)continue;
+   s.seen.push(a.id,b.id);if(s.seen.length>24)s.seen.splice(0,2);return [a,b,kind]}
+  const pl=this.pool("year"),a=pl[0],b=pl[pl.length-1];return [a,b,"year"]},
+ begin(){this.s={n:0,lives:3,seen:[],lock:false};this.next()},
+ next(){this.s.p=this.pair();this.s.lock=false;this.render()},
+ render(){const s=this.s,[a,b,kind]=s.p,best=(stats().games.duel||{}).best||0;
+  this.el.innerHTML=`<div class="col">${gameHead(this.title(),`<span class="chip">${"♥".repeat(s.lives)}${"♡".repeat(3-s.lives)}</span><span class="chip a">${s.n}</span>`)}
+   <section class="card duel"><div class="label">${kind==="year"?L("Что появилось раньше?","Which came first?"):L("Что стоило дороже? (по ценам своего года)","Which cost more? (prices of their own year)")}</div>
+   <div class="duelrow">${[a,b].map((it,i)=>`<button type="button" class="dcard" data-i="${i}">${imgTag(it)}<span class="dn">${tr(it.name)}</span><span class="dd">${tr(it.detail)}</span><span class="dv">&nbsp;</span></button>`).join("")}</div>
+   <p class="note small">${s.n?"":L("Нажмите на карточку. Три жизни, таймера нет.","Tap a card. Three lives, no timer.")}${best&&!s.n?" "+L("Рекорд: ","Best: ")+best:""}</p></section></div>`;
+  this.el.querySelectorAll(".dcard").forEach(c=>c.onclick=()=>this.pick(+c.dataset.i))},
+ pick(i){const s=this.s;if(s.lock)return;s.lock=true;const [a,b,kind]=s.p,it=[a,b],me=it[i],ot=it[1-i];
+  const ok=kind==="year"?me.year<ot.year:me.price>ot.price;
+  this.el.querySelectorAll(".dcard").forEach((c,k)=>{const x=it[k];c.querySelector(".dv").textContent=kind==="year"?String(x.year):fmt(x.price,"USD")+" · "+x.year;
+   const cls=k===i?(ok?"ok":"bad"):(ok?"":"ok");if(cls)c.classList.add(cls)});
+  if(ok)s.n++;else s.lives--;
+  let t=setTimeout(go,ok?950:1500);const self=this;function go(){clearTimeout(t);if(VIEW!=="duel")return;if(s.lives<=0)self.finish();else self.next()}
+  this.el.querySelector(".duelrow").onclick=go},
+ finish(){const s=this.s,st=logGame("duel",s.n),best=st.best,rec=s.n>0&&s.n>=best&&st.prev!==null&&s.n>st.prev;
+  const share=`Erascope · ${this.title()}: ${s.n} ${L("подряд","in a row")} 🔥`;
+  this.el.innerHTML=`<div class="col">${gameHead(this.title())}<section class="card final"><div class="label">${L("Серия окончена","Run over")}</div>
+   <h2 class="bigscore">${s.n}</h2><p>${rec?L("Новый рекорд!","New best!"):L("Рекорд","Best")+": "+best}</p>
+   <div class="btns"><button id="copy">${L("Поделиться","Share")}</button><button class="go" id="again">${L("Ещё раз","Play again")}</button></div><div class="toast" id="toast"></div></section></div>`;
+  $("#again").onclick=()=>this.begin();$("#copy").onclick=()=>copyText(share,$("#toast"))}
+};
 const GAMES=[
  {id:"where",title:()=>L("Где и когда","Where & When"),desc:W("Рассмотрите фотографию или панораму. Отметьте место на карте и угадайте год съёмки.","Study a photo or a panorama. Mark the place on the map and guess the year it was taken."),meta:W("5 кадров · ~4 мин","5 shots · ~4 min"),tag:W("Вызов дня","Daily"),img:"q21",run:WhereGame},
  {id:"agent",title:()=>AgentGame.title(),desc:W("Операция «Хронограф»: определите, где находится агент, по присланным им фотографиям и уликам.","Operation Chronograph: work out where your agent is from the photos he sends and the clues."),meta:W("5 городов · ~6 мин","5 cities · ~6 min"),tag:W("Сюжет","Story"),img:"g6",run:AgentGame},
+ {id:"duel",title:()=>DuelGame.title(),desc:W("Две вещи на выбор: что появилось раньше или стоило дороже? Три жизни, серия без таймера.","Two items: which came first or cost more? Three lives, one tap each."),meta:W("серия · ~2 мин","a run · ~2 min"),tag:W("Быстро","Quick"),img:"walkman",run:DuelGame},
  {id:"price",title:()=>PriceGame.title(),desc:W("Перед вами предмет, страна и год. Угадайте, сколько он тогда стоил в долларах США.","An item, a country and a year. Guess what it cost back then, in US dollars."),meta:W("10 вещей · ~3 мин","10 items · ~3 min"),tag:W("Цены","Prices"),img:"mac",run:PriceGame},
  {id:"travel",title:()=>TravelGame.title(),desc:W("Вам известны предмет, страна и цена. Определите год и сохраните заряд машины времени.","You know the item, the country and the price. Work out the year and keep the time machine charged."),meta:W("8 прыжков · ~3 мин","8 jumps · ~3 min"),tag:W("Годы","Years"),img:"g4",run:TravelGame},
  {id:"timeline",title:()=>TimelineGame.title(),desc:W("Расположите вещи от самой ранней к самой поздней по году выхода в продажу.","Put the exhibits in order, from earliest to latest release."),meta:W("3 зала · ~2 мин","3 rooms · ~2 min"),tag:W("Логика","Logic"),img:"cover_timeline",run:TimelineGame},
@@ -2278,7 +2310,7 @@ const ALL_GAMES=GAMES;
 /* на главной: вызов дня + две постоянные игры + «режим недели», который меняется по понедельникам */
 const CORE=["where","price","timeline"],ROT=["agent","travel","bag"];
 const weekMode=()=>ROT[Math.floor((dayIdx()+3)/7)%ROT.length];
-function homeGames(){const w=weekMode();const g=id=>GAMES.find(x=>x.id===id);return [g("where"),{...g("case"),big:true},g("price"),g("timeline"),{...g(w),week:true}]}
+function homeGames(){const w=weekMode();const g=id=>GAMES.find(x=>x.id===id);return [g("where"),g("duel"),g("price"),g("timeline"),g("case"),{...g(w),week:true}]}
 function accuracy(g){return g.n?Math.round((g.hit+g.close)/g.n*100):0}
 function hub(el){const s=stats(),lv=levelOf(s.xp||0),daily=store.get("daily_"+dayIdx(),null);const plays=Object.values(s.games).reduce((a,x)=>a+x.plays,0);
   const eras=[[6,"2013","Гонконг","Hong Kong"],[34,"1971","Париж","Paris"],[57,"1957","Лондон","London"],[84,L("80 н. э.","80 AD"),"Рим","Rome"]];
@@ -2312,7 +2344,7 @@ function proModal(){const r=$("#modalRoot");r.innerHTML=`<div class="modal" id="
   <p class="small muted">${L("Это макет. Оплата в прототипе не подключена.","This is a mock-up. Payments aren't connected in the prototype.")}</p><button class="go" id="closeM">${L("Понятно","Got it")}</button></section></div>`;
   const close=()=>r.innerHTML="";$("#closeM").onclick=close;$("#mod").onclick=e=>{if(e.target.id==="mod")close()};$("#closeM").focus()}
 /* ================= уровни ================= */
-const XP_RATE={case:0.03,price:0.02,travel:0.05,agent:0.006,where:0.003,timeline:0.08,bag:0.05};
+const XP_RATE={duel:25,case:0.03,price:0.02,travel:0.05,agent:0.006,where:0.003,timeline:0.08,bag:0.05};
 const LEVELS=[[0,W("Турист","Tourist")],[300,W("Путешественник","Traveller")],[800,W("Знаток","Connoisseur")],[1600,W("Эксперт","Expert")],[3000,W("Архивариус","Archivist")],[5000,W("Хранитель времени","Keeper of Time")],[8000,W("Легенда","Legend")]];
 function levelOf(xp){let i=0;while(i+1<LEVELS.length&&xp>=LEVELS[i+1][0])i++;const cur=LEVELS[i],next=LEVELS[i+1];
   return {n:i+1,title:tr(cur[1]),from:cur[0],to:next?next[0]:null,pct:next?Math.round((xp-cur[0])/(next[0]-cur[0])*100):100}}
