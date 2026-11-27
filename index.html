@@ -17,6 +17,7 @@
 <meta name="theme-color" content="#0C0E11">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230C0E11'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23F05252'/%3E%3C/svg%3E">
 <script src="config.js"></script>
+<script src="extra.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -894,6 +895,8 @@ BM.forEach(([k,iso,year,cur,price,usd,us,pr,pe])=>{const more=usd>us;
  ITEMS.push({id:"bm_"+k,img:"bigmac",series:"bm",name:W("Биг Мак","Big Mac"),detail:k==="in"?W("Махараджа Мак, говядины в Индии нет","Maharaja Mac — no beef in India's McDonald's"):W("Один бургер","One burger"),place:W(pr,pe),year,cur:"USD",price:usd,cr:"Evan-Amos, CC0",
   fact:W(`На месте он стоил ${price} ${cur}. По тогдашнему курсу это ${more?"дороже":"дешевле"}, чем в США ($${us.toFixed(2).replace(".",",")}). Данные индекса Биг Мака The Economist.`,
          `Locally it cost ${price} ${cur}. At the exchange rate of the day that was ${more?"more":"less"} than in the US ($${us.toFixed(2)}). Source: The Economist’s Big Mac Index.`)})});
+/* большой пакет предметов из extra.js: фото Wikimedia Commons, описания Википедии */
+const EXTRA_IDS=[];(window.EXTRA_DATA||[]).forEach(r=>{if(ITEMS.some(i=>i.id===r[0]))return;EXTRA_IDS.push(r[0]);ITEMS.push({id:r[0],cat:r[12],img:r[1],name:W(r[2],r[3]),detail:W(r[4],r[5]),place:W(r[6],r[7]),year:r[8],cur:"USD",cr:r[9],fact:W(r[10],r[11])})});
 const byId=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
 const imgId=it=>it.img||it.id;
 const imgTag=it=>`<img src="${photo(imgId(it))}" alt="${esc(tr(it.name))}" loading="lazy">`;
@@ -924,6 +927,7 @@ const srcOf=it=>it.series==="bm"?["The Economist: Big Mac index data","https://g
 const srcLink=it=>{const x=srcOf(it);return x?`<a class="src" href="${x[1]}" target="_blank" rel="noopener" data-ext="1">${L("Источник","Source")}: ${esc(x[0])} ↗</a>`:""};
 /* у каждой игры свои вещи, чтобы одна игра не подсказывала ответы другой */
 const TL_IDS=["sputnik","vostok6","apollo11","columbia","voyager","mir","hubble","curiosity","baiterek","medeu","khanshatyr","zenkov","almatymetro","eiffel","liberty","opera","goldengate","empire","tokyotower","titanic","concorde","hindenburg","wright","olympic36","maracana","pacman","tamagotchi","vhs","nokia3310","pripyat","iphone","apple2","dynatac","gameboy","ps2","switch","ipad","walkman","famicom","zx","golf","fiat500","mini","watch","c64","mac","ps1","xbox","atari2600","nes","genesis","n64","gba","ps3","ps4","ps5","frank","moby","alice","maxmor","verne","jungle","ykid","dracula","oz","nemo","krazy","gatsby","caligari","kid","goldrush","potemkin","metropolis","willie","train","modelt08","beetle","citroen2cv"];
+EXTRA_IDS.forEach(id=>TL_IDS.push(id));
 /* категории Хронолога */
 const TL_CATS=[["all",W("Всё подряд","Everything"),"🎲"],["tech",W("Гаджеты и техника","Gadgets & tech"),"📱"],["games",W("Игры и консоли","Games & consoles"),"🎮"],["cars",W("Машины","Cars"),"🚗"],["books",W("Книги и комиксы","Books & comics"),"📚"],["films",W("Кино","Films"),"🎬"]];
 const TL_GAMES=["gameboy","ps2","switch","famicom","ps1","xbox","atari2600","nes","genesis","n64","gba","ps3","ps4","ps5"],TL_CARS=["golf","fiat500","mini"];
